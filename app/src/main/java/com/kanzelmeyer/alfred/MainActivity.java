@@ -8,6 +8,8 @@ import android.support.v4.app.FragmentManager;
 import android.content.Context;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -84,7 +86,10 @@ public class MainActivity extends AppCompatActivity {
         // create adapter
         ArrayList<StateDevice> deviceArray = new ArrayList<>(StateDeviceManager.getAllDevices().values());
         DeviceSummaryAdapter adapter = new DeviceSummaryAdapter(deviceArray, getApplicationContext());
-        ListView deviceSummary = (ListView) findViewById(R.id.deviceSummaryListView);
+        RecyclerView deviceSummary = (RecyclerView) findViewById(R.id.deviceSummaryRecyclerView);
+        LinearLayoutManager llm = new LinearLayoutManager(getApplicationContext());
+        // set properties
+        deviceSummary.setLayoutManager(llm);
         deviceSummary.setAdapter(adapter);
     }
 
