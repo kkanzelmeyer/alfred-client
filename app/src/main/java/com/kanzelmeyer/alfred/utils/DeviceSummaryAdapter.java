@@ -62,7 +62,6 @@ public class DeviceSummaryAdapter extends RecyclerView.Adapter<DeviceSummaryAdap
             super(view);
             cardview = (CardView) view.findViewById(R.id.deviceCardView);
             contextImage = (ImageView) view.findViewById(R.id.cardviewContextImage);
-            icon = (ImageView) view.findViewById(R.id.cardviewIcon);
             summary = (TextView) view.findViewById(R.id.cardviewDeviceSummary);
             action = (TextView) view.findViewById(R.id.cardviewActionText);
         }

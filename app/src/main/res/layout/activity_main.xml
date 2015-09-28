@@ -1,33 +1,60 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.kanzelmeyer.alfred.MainActivity$PlaceholderFragment">
+    tools:context="com.kanzelmeyer.alfred.MainActivity$PlaceholderFragment"
+    android:fillViewport="true">
 
     <LinearLayout
-        android:id="@+id/greeting_layout"
-        android:orientation="horizontal"
         android:layout_width="match_parent"
-        android:layout_height="100dp"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentStart="true">
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
+        <RelativeLayout
+            android:id="@+id/greeting_layout"
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentStart="true"
+            android:background="#009688">
 
-        <TextView android:id="@+id/section_label"
+            <ImageView
+            android:src="@mipmap/alfred_launcher"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:id="@+id/greetingIcon"
+            android:paddingRight="35dp"
+            android:paddingLeft="35dp"
             android:paddingTop="35dp"
-            android:paddingLeft="25dp"
-            android:text="Good evening, Master Bruce" />
+            android:paddingBottom="35dp"
+            android:layout_toEndOf="@+id/cardviewContextImage" />
+
+
+            <TextView android:id="@+id/section_label"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingTop="38dp"
+                android:paddingRight="35dp"
+                android:paddingBottom="35dp"
+                android:textColor="#ffffff"
+                android:text="Good evening, Master Bruce"
+                android:layout_alignParentTop="true"
+                android:layout_toEndOf="@+id/greetingIcon" />
+
+        </RelativeLayout>
+
+        <android.support.v7.widget.RecyclerView
+            android:paddingTop="35dp"
+            android:scrollbars="vertical"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/deviceSummaryRecyclerView"
+            android:layout_alignParentStart="true"
+            android:layout_below="@+id/greeting_layout" />
+
     </LinearLayout>
 
-    <android.support.v7.widget.RecyclerView
-        android:scrollbars="vertical"
-        android:background="#f0f0f0"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/deviceSummaryRecyclerView"
-        android:layout_alignParentStart="true"
-        android:layout_below="@+id/greeting_layout" />
-
-</RelativeLayout>
+</ScrollView>

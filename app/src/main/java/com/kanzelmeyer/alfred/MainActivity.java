@@ -37,9 +37,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         // populate listview from devicemanager
         addDevices();
-
     }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -88,6 +86,7 @@ public class MainActivity extends AppCompatActivity {
         DeviceSummaryAdapter adapter = new DeviceSummaryAdapter(deviceArray, getApplicationContext());
         RecyclerView deviceSummary = (RecyclerView) findViewById(R.id.deviceSummaryRecyclerView);
         LinearLayoutManager llm = new LinearLayoutManager(getApplicationContext());
+
         // set properties
         deviceSummary.setLayoutManager(llm);
         deviceSummary.setAdapter(adapter);

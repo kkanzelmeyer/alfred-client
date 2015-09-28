@@ -1,0 +1,34 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <PreferenceCategory
+        android:title="@string/pref_cat_gen_title"
+        android:key="pref_key_general_settings">
+
+    <SwitchPreference
+        android:key="service_run"
+        android:title="@string/service_switch_toggle"
+        android:defaultValue="true"
+        />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:title="@string/pref_cat_net_title"
+        android:key="pref_key_network_settings">
+
+        <EditTextPreference
+            android:key="network_host_address"
+            android:title="@string/pref_host_address"
+            android:defaultValue="@string/default_host_address"
+            android:summary="@string/pref_host_address_summary"
+            android:enabled="false"
+            />
+
+        <EditTextPreference
+            android:key="network_host_port"
+            android:title="@string/pref_host_port"
+            android:defaultValue="@string/default_host_port"
+            android:enabled="false"
+            />
+
+    </PreferenceCategory>
+</PreferenceScreen>
