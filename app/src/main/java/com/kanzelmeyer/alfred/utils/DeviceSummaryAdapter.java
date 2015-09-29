@@ -1,6 +1,7 @@
 package com.kanzelmeyer.alfred.utils;
 
 import android.content.Context;
+import android.media.Image;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -34,7 +35,7 @@ public class DeviceSummaryAdapter extends RecyclerView.Adapter<DeviceSummaryAdap
 
         private CardView cardview;
         private ImageView contextImage;
-        private ImageView icon;
+        private ImageView alertIcon;
         private TextView summary;
         private TextView action;
 
@@ -46,8 +47,8 @@ public class DeviceSummaryAdapter extends RecyclerView.Adapter<DeviceSummaryAdap
             return contextImage;
         }
 
-        public ImageView getIcon() {
-            return icon;
+        public ImageView getAlertIcon() {
+            return alertIcon;
         }
 
         public TextView getSummary() {
@@ -61,9 +62,10 @@ public class DeviceSummaryAdapter extends RecyclerView.Adapter<DeviceSummaryAdap
         public DeviceSummaryViewHolder(View view) {
             super(view);
             cardview = (CardView) view.findViewById(R.id.deviceCardView);
-            contextImage = (ImageView) view.findViewById(R.id.cardviewContextImage);
+            contextImage = (ImageView) view.findViewById(R.id.cardviewIcon);
             summary = (TextView) view.findViewById(R.id.cardviewDeviceSummary);
             action = (TextView) view.findViewById(R.id.cardviewActionText);
+            alertIcon = (ImageView) view.findViewById((R.id.alertIcon));
         }
 
 
@@ -90,15 +92,19 @@ public class DeviceSummaryAdapter extends RecyclerView.Adapter<DeviceSummaryAdap
         // set elements
         switch(device.getType()) {
             case GARAGEDOOR:
-                // TODO set image icon
-
+                // set image alertIcon
+                vh.getContextImage().setImageResource(R.mipmap.alfred_garage_icon);
                 // Set text
                 vh.getSummary().setText(deviceName + " is " + deviceState);
 
                 // Set properties
                 break;
             case DOORBELL:
-                // TODO set image icon
+                // set image alertIcon
+                vh.getContextImage().setImageResource(R.mipmap.alfred_visitor_icon);
+
+                // hide alert alertIcon
+                vh.getAlertIcon().setVisibility(View.INVISIBLE);
 
                 // Set text
                 // TODO get recent visit count from visitor log
@@ -110,7 +116,7 @@ public class DeviceSummaryAdapter extends RecyclerView.Adapter<DeviceSummaryAdap
 
                 break;
             default:
-                // TODO set image icon
+                // TODO set image alertIcon
 
                 vh.getSummary().setText(deviceName + " is " + deviceState);
 
