@@ -1,17 +1,18 @@
 package com.kanzelmeyer.alfred;
 
+import android.content.Context;
 import android.content.res.Configuration;
 import android.content.res.TypedArray;
+import android.os.Bundle;
+import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.support.v4.widget.DrawerLayout;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.Toast;
@@ -21,23 +22,29 @@ import com.alfred.common.datamodel.StateDeviceManager;
 import com.alfred.common.messages.StateDeviceProtos;
 import com.kanzelmeyer.alfred.navigation.NavAdapter;
 import com.kanzelmeyer.alfred.navigation.NavItem;
+import com.kanzelmeyer.alfred.storage.Visitor;
+import com.kanzelmeyer.alfred.storage.VisitorLog;
 import com.kanzelmeyer.alfred.utils.DeviceSummaryAdapter;
+import com.kanzelmeyer.alfred.utils.VisitorAdapter;
 
 import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity {
+public class VisitorActivity extends AppCompatActivity {
 
-    private static final String TAG = "Main";
+    private static final String TAG = "Visitor";
     private ActionBarDrawerToggle mDrawerToggle;
     private DrawerLayout mDrawerLayout;
     private ListView mDrawerList;
+    private Context mContext;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        // populate listview from devicemanager
-        addDevices();
+        setContentView(R.layout.activity_visitor);
+        mContext = getApplicationContext();
+
+        // populate listview from visitor log
+        createVisitorCards();
 
         // Side menu
         populateNav();
@@ -83,38 +90,25 @@ public class MainActivity extends AppCompatActivity {
         mDrawerToggle.syncState();
     }
 
-    public void addDevices() {
-        // add devices
-        StateDevice doorbell =
-                new StateDevice.Builder()
-                        .setId("doorbell1")
-                        .setName("Front Door")
-                        .setType(StateDeviceProtos.StateDeviceMessage.Type.DOORBELL)
-                        .setState(StateDeviceProtos.StateDeviceMessage.State.INACTIVE)
-                        .build();
+    /**
+     * Helper method to handle the recyclerview adapter
+     */
+    public void createVisitorCards() {
+        ArrayList<Visitor> visitorList = VisitorLog.toArrayList(mContext);
+        if(visitorList.size() > 0) {
+            VisitorAdapter adapter = new VisitorAdapter(visitorList, getApplicationContext());
+            RecyclerView visitors = (RecyclerView) findViewById(R.id.visitorRecyclerView);
+            LinearLayoutManager llm = new LinearLayoutManager(mContext);
 
-        StateDevice garageDoor =
-                new StateDevice.Builder()
-                        .setId("garage1")
-                        .setName("Main Garage")
-                        .setType(StateDeviceProtos.StateDeviceMessage.Type.GARAGEDOOR)
-                        .setState(StateDeviceProtos.StateDeviceMessage.State.OPEN)
-                        .build();
-
-        StateDeviceManager.updateStateDevice(doorbell);
-        StateDeviceManager.updateStateDevice(garageDoor);
-
-        // create adapter
-        ArrayList<StateDevice> deviceArray = new ArrayList<>(StateDeviceManager.getAllDevices().values());
-        DeviceSummaryAdapter adapter = new DeviceSummaryAdapter(deviceArray, getApplicationContext());
-        RecyclerView deviceSummary = (RecyclerView) findViewById(R.id.deviceSummaryRecyclerView);
-        LinearLayoutManager llm = new LinearLayoutManager(getApplicationContext());
-
-        // set properties
-        deviceSummary.setLayoutManager(llm);
-        deviceSummary.setAdapter(adapter);
+            // set properties
+            visitors.setLayoutManager(llm);
+            visitors.setAdapter(adapter);
+        }
     }
 
+    /**
+     * Helper method to generate the side nav
+     */
     public void populateNav() {
         // get list of array resources
         String[] navTitles = getResources().getStringArray(R.array.nav_drawer_items);
@@ -138,7 +132,7 @@ public class MainActivity extends AppCompatActivity {
         mDrawerList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Toast.makeText(MainActivity.this, "Time for an upgrade!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(VisitorActivity.this, "Time for an upgrade!", Toast.LENGTH_SHORT).show();
             }
         });
     }

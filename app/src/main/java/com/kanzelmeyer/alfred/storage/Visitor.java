@@ -11,6 +11,8 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
+import static android.text.format.DateUtils.MINUTE_IN_MILLIS;
+
 /**
  * Created by kevin on 9/27/15.
  */
@@ -57,15 +59,36 @@ public class Visitor implements Comparable<Visitor> {
     }
 
     @Override
-    public String toString() {Date parsed = new Date();
+    public String toString() {
+        return "Time: " + getFormatTime() +
+                "\nLocation: " + getLocation() +
+                "\nImage Path: " + getImagePath();
+    }
+
+    /**
+     * Display time in format like March 19, 2013 11:31 am EST
+     * @return
+     */
+    public String getFormatTime() {
+        Date parsed = new Date();
         try {
             SimpleDateFormat format =
-                    new SimpleDateFormat("M dd yyyy h:m:s a zzz");
+                    new SimpleDateFormat("M dd, yyyy h:m:s a zzz");
             parsed = format.parse(String.valueOf(getTime()));
         } catch (ParseException e) {
             e.printStackTrace();
         }
-        return "Time: " + parsed + "\nLocation: " + getLocation() + "\nImage Path: " + getImagePath();
+        return parsed.toString();
+    }
+
+    /**
+     * Display time for Android display like 3 minutes ago
+     * @return
+     */
+    public String getDisplayTime() {
+        Calendar now = Calendar.getInstance();
+        String displayTime = (String) DateUtils.getRelativeTimeSpanString(getTime(), now.getTimeInMillis(), MINUTE_IN_MILLIS);
+        return displayTime;
     }
 
     @Override

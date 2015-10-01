@@ -20,23 +20,21 @@
     <string name="pref_host_address">Host Address</string>
     <string name="pref_host_address_summary">IPv4 Network Address</string>
     <string name="pref_host_port">Host Port</string>
+    <string name="drawer_open">Menu</string>
+    <string name="drawer_close">Alfred</string>
 
     <!-- Nav Drawer Menu Items -->
     <string-array name="nav_drawer_items">
         <item>Home</item>
         <item>Visitors</item>
-        <item>Garage Doors</item>
-        <item>Lights</item>
         <item>Settings</item>
     </string-array>
 
     <!-- Nav Drawer List Item Icons -->
     <!-- Keep them in order as the titles are in -->
-    <array name="nav_drawer_icons">
+    <string-array name="nav_drawer_icons">
         <item>@mipmap/ic_bowtie_24dp</item>
         <item>@mipmap/ic_person_black_24dp</item>
-        <item>@mipmap/ic_report_problem_black_24dp</item>
-        <item>@mipmap/ic_wb_incandescent_black_24dp</item>
         <item>@mipmap/ic_settings_black_24dp</item>
-    </array>
+    </string-array>
 </resources>

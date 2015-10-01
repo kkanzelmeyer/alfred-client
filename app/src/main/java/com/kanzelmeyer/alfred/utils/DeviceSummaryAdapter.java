@@ -1,6 +1,7 @@
 package com.kanzelmeyer.alfred.utils;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.media.Image;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
@@ -11,6 +12,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.alfred.common.datamodel.StateDevice;
+import com.alfred.common.messages.StateDeviceProtos;
 import com.kanzelmeyer.alfred.R;
 
 import org.apache.commons.lang3.text.WordUtils;
@@ -97,8 +99,20 @@ public class DeviceSummaryAdapter extends RecyclerView.Adapter<DeviceSummaryAdap
                 // Set text
                 vh.getSummary().setText(deviceName + " is " + deviceState);
 
-                // Set properties
+                // Set state specific properties
+                if(device.getState() == StateDeviceProtos.StateDeviceMessage.State.CLOSED) {
+                    vh.getSummary().setTextColor(Color.DKGRAY);
+                    vh.getAction().setText("OPEN NOW");
+                    vh.getAlertIcon().setVisibility(View.INVISIBLE);
+                } else {
+                    vh.getAction().setText("CLOSE NOW");
+                    vh.getAlertIcon().setVisibility(View.VISIBLE);
+                }
+
+                // TODO add button click listener
+
                 break;
+
             case DOORBELL:
                 // set image alertIcon
                 vh.getContextImage().setImageResource(R.mipmap.alfred_visitor_icon);
@@ -106,15 +120,19 @@ public class DeviceSummaryAdapter extends RecyclerView.Adapter<DeviceSummaryAdap
                 // hide alert alertIcon
                 vh.getAlertIcon().setVisibility(View.INVISIBLE);
 
-                // Set text
+                // Set description text
                 // TODO get recent visit count from visitor log
+                vh.getSummary().setTextColor(Color.DKGRAY);
                 vh.getSummary().setText("You've had 3 visitors today");
+
+                // Set action text
                 vh.getAction().setText("VIEW");
 
 
                 // TODO add button click listener
 
                 break;
+
             default:
                 // TODO set image alertIcon
 

@@ -13,12 +13,11 @@
         android:padding="12dp">
 
         <android.support.v7.widget.RecyclerView
-            android:id="@+id/deviceSummaryRecyclerView"
+            android:id="@+id/visitorRecyclerView"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_alignParentStart="true"
             android:layout_alignParentTop="true"
-            android:paddingTop="15dp"
             android:scrollbars="vertical" />
 
     </RelativeLayout>

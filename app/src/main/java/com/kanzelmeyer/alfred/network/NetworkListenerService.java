@@ -18,6 +18,7 @@ import com.kanzelmeyer.alfred.SettingsActivity;
 import com.kanzelmeyer.alfred.notifications.Notifications;
 import com.kanzelmeyer.alfred.storage.Visitor;
 import com.kanzelmeyer.alfred.storage.VisitorLog;
+import com.kanzelmeyer.alfred.utils.ConstantManager;
 
 import org.apache.commons.io.FileUtils;
 
@@ -115,7 +116,7 @@ public class NetworkListenerService extends Service {
                     }
                 }
             } catch (IOException ex) {
-                this.stop();
+                this.interrupt();
                 ex.printStackTrace();
             }
         }
@@ -138,11 +139,11 @@ public class NetworkListenerService extends Service {
         Visitor visitor = new Visitor();
         Long time = System.currentTimeMillis();
         if (msg.hasData()) {
-            // TODO save image
             ByteString data = msg.getData();
-            String imagePath = "img/visitor" + System.currentTimeMillis() + ".jpg";
-            File image = new File(imagePath);
+            String filename = "visitor" + System.currentTimeMillis() + ".jpg";
+            String imagePath = ConstantManager.IMAGE_DIR + filename;
             visitor.setImagePath(imagePath);
+            File image = new File(imagePath);
             try {
                 FileUtils.writeByteArrayToFile(image, data.toByteArray());
                 Log.i(TAG, "Saving image " + imagePath);
@@ -150,7 +151,7 @@ public class NetworkListenerService extends Service {
                 Log.e(TAG, "Can't write to file", e);
             }
         }
-
+        // TODO manage number of photos stored on device (remove old files)
         visitor.setTime(time);
         visitor.setLocation(msg.getName());
         VisitorLog.logEvent(visitor, this.getApplicationContext());

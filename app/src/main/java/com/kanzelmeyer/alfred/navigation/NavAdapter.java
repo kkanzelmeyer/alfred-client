@@ -37,7 +37,7 @@ public class NavAdapter extends BaseAdapter {
 
     @Override
     public long getItemId(int position) {
-        return 0;
+        return position;
     }
 
     @Override
@@ -56,7 +56,7 @@ public class NavAdapter extends BaseAdapter {
         icon.setImageResource(navItem.getIcon());
         title.setText(navItem.getTitle());
 
-
+        convertView.setActivated(true);
         return convertView;
     }
 }

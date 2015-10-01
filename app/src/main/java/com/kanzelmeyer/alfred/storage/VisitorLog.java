@@ -29,11 +29,11 @@ public class VisitorLog {
         JSONArray log = new JSONArray();
         try {
             // Check if file exists for initial installation
-            File file = new File(context.getFilesDir(), ConstantManager.EVENT_LOG);
+            File file = new File(context.getFilesDir(), ConstantManager.VISITOR_LOG);
             if(!file.exists()) {
                 Log.i(TAG, "File being created? " + file.createNewFile());
             }
-                FileInputStream in = context.openFileInput(ConstantManager.EVENT_LOG);
+                FileInputStream in = context.openFileInput(ConstantManager.VISITOR_LOG);
                 InputStreamReader inputStreamReader = new InputStreamReader(in);
                 BufferedReader bufferedReader = new BufferedReader(
                         inputStreamReader);
@@ -60,7 +60,7 @@ public class VisitorLog {
     private static void saveJSONLog(JSONArray log, Context context) {
         // Write complete array to the file
         try {
-            FileOutputStream fos = context.openFileOutput(ConstantManager.EVENT_LOG,
+            FileOutputStream fos = context.openFileOutput(ConstantManager.VISITOR_LOG,
                     Context.MODE_PRIVATE);
             fos.write(log.toString().getBytes());
             fos.close();
@@ -89,7 +89,7 @@ public class VisitorLog {
         saveJSONLog(logArray, context);
     }
 
-    public static ArrayList<Visitor> logAsEventList(Context context) {
+    public static ArrayList<Visitor> toArrayList(Context context) {
         ArrayList<Visitor> visitorList = new ArrayList<>();
         JSONObject obj;
         JSONArray eventArray = getLogAsJSONArray(context);
@@ -108,4 +108,6 @@ public class VisitorLog {
         Collections.sort(visitorList);
         return visitorList;
     }
+
+    // TODO method to manage log size and images
 }
