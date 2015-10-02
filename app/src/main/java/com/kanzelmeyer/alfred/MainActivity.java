@@ -1,5 +1,7 @@
 package com.kanzelmeyer.alfred;
 
+import android.content.Context;
+import android.content.Intent;
 import android.content.res.Configuration;
 import android.content.res.TypedArray;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -31,11 +33,13 @@ public class MainActivity extends AppCompatActivity {
     private ActionBarDrawerToggle mDrawerToggle;
     private DrawerLayout mDrawerLayout;
     private ListView mDrawerList;
+    private Context mContext;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        mContext = getApplicationContext();
         // populate listview from devicemanager
         addDevices();
 
@@ -131,14 +135,36 @@ public class MainActivity extends AppCompatActivity {
         }
 
         // set adapter to list view
-        NavAdapter navAdapter = new NavAdapter(navItems, getApplicationContext());
+        NavAdapter navAdapter = new NavAdapter(navItems, mContext);
         mDrawerList.setAdapter(navAdapter);
 
-        // TODO set click listeners
+
         mDrawerList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Toast.makeText(MainActivity.this, "Time for an upgrade!", Toast.LENGTH_SHORT).show();
+
+                Intent intent = null;
+
+                switch(position) {
+                    // Home
+                    case 0:
+                        // Do nothing, already on the home screen
+                        break;
+
+                    // Visitor
+                    case 1:
+                        intent = new Intent(mContext, VisitorActivity.class);
+                        break;
+
+                    // Settings
+                    case 2:
+                        intent = new Intent(mContext, SettingsActivity.class);
+                        break;
+                }
+
+                if(intent != null) {
+                    mContext.startActivity(intent);
+                }
             }
         });
     }
