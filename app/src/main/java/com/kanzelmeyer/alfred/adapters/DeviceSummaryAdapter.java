@@ -1,8 +1,7 @@
-package com.kanzelmeyer.alfred.utils;
+package com.kanzelmeyer.alfred.adapters;
 
 import android.content.Context;
 import android.graphics.Color;
-import android.media.Image;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -15,6 +14,7 @@ import com.alfred.common.datamodel.StateDevice;
 import com.alfred.common.messages.StateDeviceProtos;
 import com.kanzelmeyer.alfred.R;
 import com.kanzelmeyer.alfred.listeners.ViewVisitorsActivity;
+import com.kanzelmeyer.alfred.storage.VisitorLog;
 
 import org.apache.commons.lang3.text.WordUtils;
 
@@ -124,7 +124,12 @@ public class DeviceSummaryAdapter extends RecyclerView.Adapter<DeviceSummaryAdap
                 // Set description text
                 // TODO get recent visit count from visitor log
                 vh.getSummary().setTextColor(Color.DKGRAY);
-                vh.getSummary().setText("You've had 3 visitors today");
+                int visitsToday = VisitorLog.getVisitsToday(mContext);
+                if(visitsToday == 1) {
+                    vh.getSummary().setText("You've had " + visitsToday + " visitor today");
+                } else {
+                    vh.getSummary().setText("You've had " + visitsToday + " visitors today");
+                }
 
                 // Set action text
                 vh.getAction().setText("VIEW");

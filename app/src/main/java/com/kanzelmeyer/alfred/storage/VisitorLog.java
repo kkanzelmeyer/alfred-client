@@ -16,7 +16,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
+import java.util.Date;
 
 /**
  * Created by kevin on 9/10/15.
@@ -24,7 +26,46 @@ import java.util.Collections;
 public class VisitorLog {
 
     final static String TAG = "VisitorLog";
+    private static int visitsToday;
 
+    /**
+     * Method to count the number of visitors today
+     * @param context
+     * @return
+     */
+    public static int getVisitsToday(Context context) {
+        JSONArray log = getLogAsJSONArray(context);
+        ArrayList<Visitor> visitorList = new ArrayList<>();
+        JSONArray returnArray = new JSONArray();
+        JSONObject obj;
+        Visitor v;
+
+        visitsToday = 0;
+        if(log.length() > 0 ) {
+            for (int i = 0; i < log.length(); i++) {
+                try {
+                    obj = log.getJSONObject(i);
+                    v = toVisitor(obj);
+
+                    // update the count of visitors today
+                    if(isToday(v.getTime())) {
+                        visitsToday ++;
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        } else {
+            Log.i(TAG, "Log is empty");
+        }
+        return visitsToday;
+    }
+
+    /**
+     * This method reads the current visitor log and returns it as a JSON Array
+     * @param context
+     * @return
+     */
     public static JSONArray getLogAsJSONArray(Context context) {
         JSONArray log = new JSONArray();
         try {
@@ -57,18 +98,93 @@ public class VisitorLog {
         return log;
     }
 
+    /**
+     * This method saves the input JSON array as the new log file
+     * @param log
+     * @param context
+     */
     private static void saveJSONLog(JSONArray log, Context context) {
+
+        JSONArray adjustedLog = countAndTruncate(log, context);
+
         // Write complete array to the file
         try {
             FileOutputStream fos = context.openFileOutput(ConstantManager.VISITOR_LOG,
                     Context.MODE_PRIVATE);
-            fos.write(log.toString().getBytes());
+            fos.write(adjustedLog.toString().getBytes());
             fos.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
+    /**
+     * This method counts and truncates a JSON array with a number entries
+     * higher than a threshold
+     * @param log
+     * @return
+     */
+    private static JSONArray countAndTruncate(JSONArray log, Context context) {
+        ArrayList<Visitor> visitorList = new ArrayList<>();
+        JSONArray returnArray = new JSONArray();
+        JSONObject obj;
+        Visitor v;
+
+        // TODO make this a preference
+        int entriesToKeep = 15;
+
+        if(log.length() > 0 ) {
+            for (int i = 0; i < log.length(); i++) {
+                try {
+                    obj = log.getJSONObject(i);
+                    v = toVisitor(obj);
+                    visitorList.add(v);
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        } else {
+            Log.i(TAG, "Log is empty");
+        }
+        // Sort the visitor log and delete old entries
+        Collections.sort(visitorList);
+        if (visitorList.size() > entriesToKeep) {
+            for (int i = entriesToKeep; i < visitorList.size(); i++) {
+                v = visitorList.get(i);
+                // TODO remove images associated with visitor
+                // check if file exists
+                File imageDirectory = new File(context.getFilesDir() + ConstantManager.IMAGE_DIR);
+                if (!imageDirectory.exists()) {
+                    Log.e(TAG, "Directory not found - cannot delete image");
+                } else {
+                    // check if image exists
+                    File image = new File(imageDirectory, v.getImagePath());
+                    if (!image.exists()) {
+                        Log.e(TAG, "Image not found - cannot delete image");
+                    } else {
+                        // delete file
+                        Log.i(TAG, "Deleting image");
+                        image.delete();
+                    }
+                }
+                Log.i(TAG, "Deleting log entry");
+                visitorList.remove(i);
+            }
+        }
+
+        // return the cleaned list as a JSON Array
+        for(Visitor visitor : visitorList) {
+            returnArray.put(visitor.toJSON());
+        }
+        return returnArray;
+    }
+
+    /**
+     * This method takes a JSON object and converts it to a Visitor object
+     * @param obj
+     * @return
+     */
     private static Visitor toVisitor(JSONObject obj) {
         Visitor visitor = new Visitor();
         try {
@@ -81,22 +197,32 @@ public class VisitorLog {
         return visitor;
     }
 
-    public static void logEvent(Visitor visitor, Context context) {
+    /**
+     * This method logs a visitor event
+     * @param visitor
+     * @param context
+     */
+    public static void logVisitor(Visitor visitor, Context context) {
+        Log.i(TAG, "Saving visitor");
         JSONObject obj = visitor.toJSON();
         JSONArray logArray = getLogAsJSONArray(context);
-        Log.i(TAG, visitor.toString());
         logArray.put(obj);
         saveJSONLog(logArray, context);
     }
 
+    /**
+     * This method returns the current visitor log as an array list
+     * @param context
+     * @return
+     */
     public static ArrayList<Visitor> toArrayList(Context context) {
         ArrayList<Visitor> visitorList = new ArrayList<>();
         JSONObject obj;
-        JSONArray eventArray = getLogAsJSONArray(context);
-        if(eventArray.length() > 0 ) {
-            for (int i = 0; i < eventArray.length(); i++) {
+        JSONArray visitorArray = getLogAsJSONArray(context);
+        if(visitorArray.length() > 0 ) {
+            for (int i = 0; i < visitorArray.length(); i++) {
                 try {
-                    obj = eventArray.getJSONObject(i);
+                    obj = visitorArray.getJSONObject(i);
                     visitorList.add(toVisitor(obj));
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -109,5 +235,20 @@ public class VisitorLog {
         return visitorList;
     }
 
-    // TODO method to manage log size and images
+    /**
+     * This method checks if a given date occurs today
+     * @param time
+     * @return
+     */
+    public static boolean isToday(long time) {
+        Calendar c = Calendar.getInstance();
+        c.setTimeInMillis(time);
+        Date visitorDate = c.getTime();
+
+        c.setTimeInMillis(System.currentTimeMillis());
+        Date now = c.getTime();
+
+        return visitorDate.before(now);
+    }
+
 }

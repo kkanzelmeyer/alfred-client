@@ -11,6 +11,7 @@ import android.util.Log;
 
 import com.kanzelmeyer.alfred.MainActivity;
 import com.kanzelmeyer.alfred.R;
+import com.kanzelmeyer.alfred.VisitorActivity;
 
 /**
  * Created by kevin on 9/27/15.
@@ -22,6 +23,11 @@ public class Notifications {
     private static final String TAG = "NM";
 
 
+    /**
+     * Notification for when the background service is running
+     * @param mContext
+     * @return
+     */
     public static Notification showServiceNotification(Context mContext) {
         NotificationManager mNM;
         Notification serviceNotification;
@@ -50,7 +56,10 @@ public class Notifications {
         return serviceNotification;
     }
 
-
+    /**
+     * Notification for when a visitor is detected
+     * @param mContext
+     */
     public static void sendDoorbellAlertNotification(Context mContext) {
         NotificationManager mNM;
         Notification doorbellNotification;
@@ -60,7 +69,7 @@ public class Notifications {
 
         // The PendingIntent to launch our activity if the user selects this notification
         PendingIntent contentIntent = PendingIntent.getActivity(mContext.getApplicationContext(), 0,
-                new Intent(mContext, MainActivity.class), 0);
+                new Intent(mContext, VisitorActivity.class), 0);
 
         // The notification sound
         Uri notificationSound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);

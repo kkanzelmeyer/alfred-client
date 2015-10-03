@@ -2,11 +2,11 @@ package com.kanzelmeyer.alfred.network;
 
 import android.app.Notification;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
-import android.util.EventLog;
 import android.util.Log;
 
 import com.alfred.common.datamodel.StateDevice;
@@ -23,29 +23,30 @@ import com.kanzelmeyer.alfred.utils.ConstantManager;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.ConnectException;
 import java.net.InetAddress;
 import java.net.Socket;
-import java.util.Calendar;
 
 public class NetworkListenerService extends Service {
 
-    private int _hostPort = 4321;
-    private String _hostAddress = "127.0.0.1";
-    private Socket _socket = null;
+    private int mHostPort = 56;
+    private String mHostAddress = "192.168.1.25";
+    private Socket mSocket = null;
     private static final String TAG = "NetService";
-    private Notification serviceNotification;
-    private NetworkThread networkThread = null;
+    private Notification mServiceNotification;
+    private NetworkThread mNetworkThread = null;
 
     public NetworkListenerService() {
     }
 
     public void setPort(String port) {
-        this._hostPort = Integer.valueOf(port);
+        this.mHostPort = Integer.valueOf(port);
     }
 
     public void setHostAddress(String hostAddress) {
-        this._hostAddress = hostAddress;
+        this.mHostAddress = hostAddress;
     }
 
     @Override
@@ -72,12 +73,15 @@ public class NetworkListenerService extends Service {
     public void onDestroy() {
         Log.i(TAG, "Stopping network listener");
         super.onDestroy();
-        networkThread.interrupt();
-        try {
-            _socket.close();
-        } catch (IOException e) {
-            e.printStackTrace();
+        mNetworkThread.interrupt();
+        if(mSocket != null) {
+            try {
+                mSocket.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
+
     }
 
     @Override
@@ -88,44 +92,57 @@ public class NetworkListenerService extends Service {
 
     private void runListener() {
         Log.i(TAG, "Starting Foreground service");
-        startForeground(Notifications.SERVICE_NOTIFICATION_ID, serviceNotification);
-        networkThread = new NetworkThread();
-        networkThread.start();
+        startForeground(Notifications.SERVICE_NOTIFICATION_ID, mServiceNotification);
+        mNetworkThread = new NetworkThread();
+        mNetworkThread.start();
     }
 
     private class NetworkThread extends Thread {
         public void run() {
             try {
-                InetAddress host = InetAddress.getByName(_hostAddress);
-                _socket = new Socket(host, _hostPort);
+                InetAddress host = InetAddress.getByName(mHostAddress);
+                mSocket = new Socket(host, mHostPort);
 
                 while (true) {
-                    if (_socket.isConnected()) {
-                        StateDeviceProtos.StateDeviceMessage msg = StateDeviceProtos.StateDeviceMessage.parseDelimitedFrom(_socket.getInputStream());
-                        Log.i(TAG, "Message Received.\n" + msg.toString());
+                    if (mSocket.isConnected()) {
+                        StateDeviceProtos.StateDeviceMessage msg = StateDeviceProtos.StateDeviceMessage.parseDelimitedFrom(mSocket.getInputStream());
+                        Log.i(TAG, "Message Received.\n");
 
                         // Update data model
                         StateDevice device = new StateDevice(msg);
                         StateDeviceManager.updateStateDevice(device);
 
                         // notification and save image
-                        sendDoorbellAlertNotification();
                         if (msg.getType() == StateDeviceProtos.StateDeviceMessage.Type.DOORBELL) {
-                            saveVisitor(msg);
+                            if(msg.hasData()) {
+                                sendDoorbellAlertNotification();
+                                saveVisitor(msg);
+                            } else {
+                                Log.i(TAG, msg.toString());
+                            }
+                        } else {
+                            Log.i(TAG, msg.toString());
                         }
                     }
                 }
+            } catch (ConnectException ce) {
+                Log.e(TAG, "Unable to connect", ce);
             } catch (IOException ex) {
-                this.interrupt();
-                ex.printStackTrace();
+                Log.e(TAG, "Connection error", ex);
             }
+            // stop the background service
+            SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
+            SharedPreferences.Editor editor = sharedPref.edit();
+            editor.putBoolean(SettingsActivity.KEY_SERVICE_RUN, false);
+            editor.commit();
+            this.interrupt();
         }
     }
 
 
     private void showServiceNotification() {
         Log.i(TAG, "Building notification");
-        serviceNotification = Notifications.showServiceNotification(this);
+        mServiceNotification = Notifications.showServiceNotification(this);
     }
 
 
@@ -135,25 +152,35 @@ public class NetworkListenerService extends Service {
     }
 
     private void saveVisitor(StateDeviceProtos.StateDeviceMessage msg) {
+        Context context = this.getApplicationContext();
         Log.i(TAG, "Logging Event");
         Visitor visitor = new Visitor();
         Long time = System.currentTimeMillis();
-        if (msg.hasData()) {
-            ByteString data = msg.getData();
-            String filename = "visitor" + System.currentTimeMillis() + ".jpg";
-            String imagePath = ConstantManager.IMAGE_DIR + filename;
-            visitor.setImagePath(imagePath);
-            File image = new File(imagePath);
-            try {
-                FileUtils.writeByteArrayToFile(image, data.toByteArray());
-                Log.i(TAG, "Saving image " + imagePath);
-            } catch (IOException e) {
-                Log.e(TAG, "Can't write to file", e);
-            }
+        ByteString data = msg.getData();
+        String filename = "visitor" + System.currentTimeMillis() + ".jpg";
+        visitor.setImagePath(filename);
+        File imageDirectory = new File(context.getFilesDir() + ConstantManager.IMAGE_DIR);
+
+        // create the image directory
+        if(!imageDirectory.exists()) {
+            imageDirectory.mkdirs();
         }
+
+        File image = new File(imageDirectory, filename);
+        try {
+            if(!image.exists()) {
+                Log.i(TAG, "File being created? " + image.createNewFile());
+            }
+            FileOutputStream fos = new FileOutputStream(image, true);
+            fos.write(data.toByteArray());
+            fos.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
         // TODO manage number of photos stored on device (remove old files)
         visitor.setTime(time);
         visitor.setLocation(msg.getName());
-        VisitorLog.logEvent(visitor, this.getApplicationContext());
+        VisitorLog.logVisitor(visitor, context);
     }
 }

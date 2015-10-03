@@ -1,27 +1,27 @@
-package com.kanzelmeyer.alfred.utils;
+package com.kanzelmeyer.alfred.adapters;
 
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
-import android.text.format.DateUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-import static android.text.format.DateUtils.*;
 
 import com.kanzelmeyer.alfred.R;
 import com.kanzelmeyer.alfred.storage.Visitor;
+import com.kanzelmeyer.alfred.utils.ConstantManager;
 
 import org.apache.commons.lang3.text.WordUtils;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Calendar;
 
 /**
  * Used to create the card view activity for the visitor log
@@ -64,9 +64,9 @@ public class VisitorAdapter extends RecyclerView.Adapter<VisitorAdapter.VisitorV
         public VisitorViewHolder(View view) {
             super(view);
             cardview = (CardView) view.findViewById(R.id.deviceCardView);
-            mVisitorImage = (ImageView) view.findViewById(R.id.cardviewIcon);
-            mLocation = (TextView) view.findViewById(R.id.cardviewDeviceSummary);
-            mDate = (TextView) view.findViewById(R.id.cardviewActionText);
+            mVisitorImage = (ImageView) view.findViewById(R.id.visitorImage);
+            mLocation = (TextView) view.findViewById(R.id.visitorLocation);
+            mDate = (TextView) view.findViewById(R.id.visitorTime);
         }
 
     }
@@ -88,21 +88,29 @@ public class VisitorAdapter extends RecyclerView.Adapter<VisitorAdapter.VisitorV
         Visitor visitor = mDeviceList.get(i);
 
         // set location
-        String location = WordUtils.capitalizeFully(visitor.getLocation().toString());
+        String location = WordUtils.capitalizeFully(visitor.getLocation());
         vh.getLocation().setText(location);
 
         // set time
         vh.getDate().setText(visitor.getDisplayTime());
 
         // set image
-        File image = new File(visitor.getImagePath());
-        if(image.exists()) {
-            Bitmap bitmap = BitmapFactory.decodeFile(image.getAbsolutePath());
-            vh.getVisitorImage().setImageBitmap(bitmap);
+        File imageDirectory = new File(mContext.getFilesDir() + ConstantManager.IMAGE_DIR);
+        if(!imageDirectory.exists()) {
+            Log.e(TAG, "Image directory not found - setting default image");
+            // set to default image
+            vh.getVisitorImage().setImageResource(R.drawable.garage_16x9);
         } else {
-            Log.e(TAG, "File not found");
+            File image = new File(imageDirectory, visitor.getImagePath());
+            if (!image.exists()) {
+                Log.e(TAG, "File not found - setting default image");
+                // set to default image
+                vh.getVisitorImage().setImageResource(R.drawable.garage_16x9);
+            } else {
+                Bitmap bitmap = BitmapFactory.decodeFile(image.getAbsolutePath());
+                vh.getVisitorImage().setImageBitmap(bitmap);
+            }
         }
-
     }
 
     @Override

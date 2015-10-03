@@ -5,5 +5,5 @@ package com.kanzelmeyer.alfred.utils;
  */
 public class ConstantManager {
     public static final String VISITOR_LOG = "visitorLog.txt";
-    public static final String IMAGE_DIR = "img/";
+    public static final String IMAGE_DIR = "/img";
 }

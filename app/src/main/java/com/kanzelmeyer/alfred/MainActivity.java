@@ -2,28 +2,31 @@ package com.kanzelmeyer.alfred;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.content.res.TypedArray;
+import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.support.v4.widget.DrawerLayout;
 import android.widget.AdapterView;
 import android.widget.ListView;
-import android.widget.Toast;
 
 import com.alfred.common.datamodel.StateDevice;
 import com.alfred.common.datamodel.StateDeviceManager;
 import com.alfred.common.messages.StateDeviceProtos;
 import com.kanzelmeyer.alfred.navigation.NavAdapter;
 import com.kanzelmeyer.alfred.navigation.NavItem;
-import com.kanzelmeyer.alfred.utils.DeviceSummaryAdapter;
+import com.kanzelmeyer.alfred.network.NetworkListenerService;
+import com.kanzelmeyer.alfred.adapters.DeviceSummaryAdapter;
 
 import java.util.ArrayList;
 
@@ -34,20 +37,31 @@ public class MainActivity extends AppCompatActivity {
     private DrawerLayout mDrawerLayout;
     private ListView mDrawerList;
     private Context mContext;
+    // Recyclerview items
+    private RecyclerView mDeviceSummary;
+    private DeviceSummaryAdapter mDeviceAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        mContext = getApplicationContext();
-        // populate listview from devicemanager
-        addDevices();
+        mContext = this;
 
         // Side menu
         populateNav();
         buildNav();
+
+        // Load Preferences
+        PreferenceManager.setDefaultValues(this, R.xml.pref_general, false);
+        manageService();
     }
 
+    @Override
+    protected void onResume() {
+        Log.i(TAG, "On resume");
+        super.onResume();
+        getDevices();
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -87,8 +101,25 @@ public class MainActivity extends AppCompatActivity {
         mDrawerToggle.syncState();
     }
 
-    public void addDevices() {
-        // add devices
+    /**
+     * Method to populate the recycler view with devices from the device manager
+     */
+    private void getDevices() {
+        // create adapter
+        ArrayList<StateDevice> deviceArray = new ArrayList<>(StateDeviceManager.getAllDevices().values());
+        mDeviceAdapter = new DeviceSummaryAdapter(deviceArray, mContext);
+        mDeviceSummary = (RecyclerView) findViewById(R.id.deviceSummaryRecyclerView);
+        LinearLayoutManager llm = new LinearLayoutManager(mContext);
+
+        // set properties
+        mDeviceSummary.setLayoutManager(llm);
+        mDeviceSummary.setAdapter(mDeviceAdapter);
+    }
+
+    /**
+     * Helper method to add devices for testing
+     */
+    private void addTestDevices() {
         StateDevice doorbell =
                 new StateDevice.Builder()
                         .setId("doorbell1")
@@ -107,18 +138,11 @@ public class MainActivity extends AppCompatActivity {
 
         StateDeviceManager.updateStateDevice(doorbell);
         StateDeviceManager.updateStateDevice(garageDoor);
-
-        // create adapter
-        ArrayList<StateDevice> deviceArray = new ArrayList<>(StateDeviceManager.getAllDevices().values());
-        DeviceSummaryAdapter adapter = new DeviceSummaryAdapter(deviceArray, getApplicationContext());
-        RecyclerView deviceSummary = (RecyclerView) findViewById(R.id.deviceSummaryRecyclerView);
-        LinearLayoutManager llm = new LinearLayoutManager(getApplicationContext());
-
-        // set properties
-        deviceSummary.setLayoutManager(llm);
-        deviceSummary.setAdapter(adapter);
     }
 
+    /**
+     * Helper method to populate the side nav
+     */
     public void populateNav() {
         // get list of array resources
         String[] navTitles = getResources().getStringArray(R.array.nav_drawer_items);
@@ -134,18 +158,18 @@ public class MainActivity extends AppCompatActivity {
             navItems.add(new NavItem(navTitles[i], navIcons.getResourceId(i, -1)));
         }
 
-        // set adapter to list view
+        // set mDeviceAdapter to list view
         NavAdapter navAdapter = new NavAdapter(navItems, mContext);
         mDrawerList.setAdapter(navAdapter);
 
-
+        // Set click listener for action text
         mDrawerList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
                 Intent intent = null;
 
-                switch(position) {
+                switch (position) {
                     // Home
                     case 0:
                         // Do nothing, already on the home screen
@@ -162,16 +186,19 @@ public class MainActivity extends AppCompatActivity {
                         break;
                 }
 
-                if(intent != null) {
+                // close drawer and deselect
+                mDrawerLayout.closeDrawer(Gravity.LEFT);
+                view.setActivated(false);
+
+                if (intent != null) {
                     mContext.startActivity(intent);
                 }
             }
         });
     }
 
-
+    // Helper method to construct the side menu
     public void buildNav() {
-
         mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout,
                 R.string.drawer_open, R.string.drawer_close) {
 
@@ -196,9 +223,21 @@ public class MainActivity extends AppCompatActivity {
         mDrawerLayout.setDrawerListener(mDrawerToggle);
 
 
-
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setHomeButtonEnabled(true);
     }
 
+    /**
+     * Helper method to manage the network service
+     */
+    public void manageService() {
+        Intent serviceIntent = new Intent(this, NetworkListenerService.class);
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(mContext);
+        boolean preferenceRun = sharedPref.getBoolean(SettingsActivity.KEY_SERVICE_RUN, true);
+        if(preferenceRun) {
+            startService(serviceIntent);
+        } else {
+            stopService(serviceIntent);
+        }
+    }
 }

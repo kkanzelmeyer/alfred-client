@@ -2,11 +2,16 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.kanzelmeyer.alfred" >
 
+    <!-- Permissions -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/alfred_launcher"
         android:label="@string/app_name"
         android:theme="@style/AppTheme">
+
+        <!-- Activities -->
         <activity
             android:name=".MainActivity"
             android:label="@string/title_activity_main" >
@@ -17,10 +22,18 @@
         </activity>
         <activity
             android:name=".VisitorActivity"
-            android:label="@string/title_activity_visitor" >
-            <intent-filter>
-            </intent-filter>
+            android:label="@string/title_activity_visitor"
+            android:parentActivityName="com.kanzelmeyer.alfred.MainActivity" >
         </activity>
+        <activity
+            android:name=".SettingsActivity"
+            android:label="@string/title_activity_settings"
+            android:parentActivityName="com.kanzelmeyer.alfred.MainActivity" >
+        </activity>
+
+        <!-- Services -->
+        <service android:name="com.kanzelmeyer.alfred.network.NetworkListenerService" android:enabled="true" android:exported="true">
+        </service>
     </application>
 
 </manifest>

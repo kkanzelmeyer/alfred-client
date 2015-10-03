@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.res.Configuration;
 import android.content.res.TypedArray;
 import android.os.Bundle;
+import android.support.v4.app.NavUtils;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
@@ -17,15 +18,12 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.Toast;
 
-import com.alfred.common.datamodel.StateDevice;
 import com.alfred.common.datamodel.StateDeviceManager;
-import com.alfred.common.messages.StateDeviceProtos;
 import com.kanzelmeyer.alfred.navigation.NavAdapter;
 import com.kanzelmeyer.alfred.navigation.NavItem;
 import com.kanzelmeyer.alfred.storage.Visitor;
 import com.kanzelmeyer.alfred.storage.VisitorLog;
-import com.kanzelmeyer.alfred.utils.DeviceSummaryAdapter;
-import com.kanzelmeyer.alfred.utils.VisitorAdapter;
+import com.kanzelmeyer.alfred.adapters.VisitorAdapter;
 
 import java.util.ArrayList;
 
@@ -46,11 +44,11 @@ public class VisitorActivity extends AppCompatActivity {
         // populate listview from visitor log
         createVisitorCards();
 
-        // Side menu
-        populateNav();
-        buildNav();
-    }
+        // TODO add statedevicehandler to send message back to server and update device state
 
+        // enable the back arrow in the action bar
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -63,17 +61,23 @@ public class VisitorActivity extends AppCompatActivity {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
+        switch(item.getItemId()) {
+            // handle click to the action bar up button
+            case android.R.id.home:
+                NavUtils.navigateUpFromSameTask(this);
+                break;
         }
+//
+//        //noinspection SimplifiableIfStatement
+//        if (id == R.id.action_settings) {
+//            return true;
+//        }
 
         // Activate the navigation drawer toggle
-        if (mDrawerToggle.onOptionsItemSelected(item)) {
-            return true;
-        }
+//        if (mDrawerToggle.onOptionsItemSelected(item)) {
+//            return true;
+//        }
 
         return super.onOptionsItemSelected(item);
     }
@@ -81,13 +85,13 @@ public class VisitorActivity extends AppCompatActivity {
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
-        mDrawerToggle.onConfigurationChanged(newConfig);
+//        mDrawerToggle.onConfigurationChanged(newConfig);
     }
 
     @Override
     protected void onPostCreate(Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
-        mDrawerToggle.syncState();
+//        mDrawerToggle.syncState();
     }
 
     /**
@@ -95,19 +99,17 @@ public class VisitorActivity extends AppCompatActivity {
      */
     public void createVisitorCards() {
         ArrayList<Visitor> visitorList = VisitorLog.toArrayList(mContext);
-        if(visitorList.size() > 0) {
-            VisitorAdapter adapter = new VisitorAdapter(visitorList, getApplicationContext());
-            RecyclerView visitors = (RecyclerView) findViewById(R.id.visitorRecyclerView);
-            LinearLayoutManager llm = new LinearLayoutManager(mContext);
+        VisitorAdapter adapter = new VisitorAdapter(visitorList, getApplicationContext());
+        RecyclerView visitors = (RecyclerView) findViewById(R.id.visitorRecyclerView);
+        LinearLayoutManager llm = new LinearLayoutManager(mContext);
 
-            // set properties
-            visitors.setLayoutManager(llm);
-            visitors.setAdapter(adapter);
-        }
+        // set properties
+        visitors.setLayoutManager(llm);
+        visitors.setAdapter(adapter);
     }
 
     /**
-     * Helper method to generate the side nav
+     * Helper method to populate the side nav
      */
     public void populateNav() {
         // get list of array resources
@@ -137,7 +139,9 @@ public class VisitorActivity extends AppCompatActivity {
         });
     }
 
-
+    /**
+     * Helper method to construct the side nav
+     */
     public void buildNav() {
 
         mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout,
@@ -164,9 +168,22 @@ public class VisitorActivity extends AppCompatActivity {
         mDrawerLayout.setDrawerListener(mDrawerToggle);
 
 
-
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setHomeButtonEnabled(true);
+    }
+
+    /**
+     * Method to create visitor entries for testing
+     */
+    public void addVisitors() {
+
+        for(int i = 0; i < 3; i++) {
+            Visitor v = new Visitor();
+            v.setImagePath("");
+            v.setLocation("Front Door");
+            v.setTime(System.currentTimeMillis());
+            VisitorLog.logVisitor(v, mContext);
+        }
     }
 
 }
