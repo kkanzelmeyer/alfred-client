@@ -82,10 +82,17 @@ public class DoorbellPlugin {
             Log.i(TAG, "New message received");
             // Update data model
             if(msg != null) {
+
+                // create a device from the message
                 StateDevice device = new StateDevice(msg);
 
-                // add or update the device
-                StateDeviceManager.updateStateDevice(device);
+                if(StateDeviceManager.contains(msg.getId())) {
+                    // update the device
+                    StateDeviceManager.updateStateDevice(device);
+                } else {
+                    // add the device
+                    StateDeviceManager.addStateDevice(device);
+                }
 
                 // notification and save image
                 if (msg.getType() == StateDeviceProtos.StateDeviceMessage.Type.DOORBELL) {
@@ -171,7 +178,6 @@ public class DoorbellPlugin {
 
         @Override
         public void onRemoveDevice(StateDevice stateDevice) {
-
             Log.i(TAG, "Device removed");
         }
     }

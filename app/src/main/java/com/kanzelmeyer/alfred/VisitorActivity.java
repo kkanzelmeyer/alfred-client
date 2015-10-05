@@ -51,6 +51,7 @@ public class VisitorActivity extends AppCompatActivity {
         Bundle extras = getIntent().getExtras();
         if (extras != null) {
             String deviceId = extras.getString("deviceId");
+            Log.i(TAG, "Updating device " + deviceId);
             StateDeviceManager.updateStateDevice(deviceId, StateDeviceProtos.StateDeviceMessage.State.INACTIVE);
         }
 

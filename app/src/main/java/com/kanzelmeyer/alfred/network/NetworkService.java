@@ -1,6 +1,8 @@
 package com.kanzelmeyer.alfred.network;
 
 import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -11,6 +13,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.alfred.common.messages.StateDeviceProtos;
+import com.kanzelmeyer.alfred.MainActivity;
 import com.kanzelmeyer.alfred.R;
 import com.kanzelmeyer.alfred.SettingsActivity;
 import com.kanzelmeyer.alfred.notifications.Notifications;
@@ -28,8 +31,11 @@ public class NetworkService extends Service {
     private String mHostAddress = "192.168.1.25";
     private Socket mSocket = null;
     private static final String TAG = "NetService";
-    private Notification mServiceNotification;
     private NetworkThread mNetworkThread = null;
+    // notification
+    private NotificationManager mNotificationManager;
+    private Notification mServiceNotification;
+    public static final int SERVICE_NOTIFICATION_ID = 7986;
     private Context mContext;
     // Plugins
     private DoorbellPlugin mDoorbellPlugin;
@@ -59,7 +65,7 @@ public class NetworkService extends Service {
         mDoorbellPlugin.activate();
 
         // start service
-        showServiceNotification();
+        Notifications.showServiceNotification(mContext);
         runListener();
     }
 
@@ -94,6 +100,7 @@ public class NetworkService extends Service {
         startForeground(Notifications.SERVICE_NOTIFICATION_ID, mServiceNotification);
         mNetworkThread = new NetworkThread();
         mNetworkThread.start();
+
     }
 
     /**
@@ -114,6 +121,11 @@ public class NetworkService extends Service {
                         StateDeviceProtos.StateDeviceMessage msg = StateDeviceProtos.StateDeviceMessage.parseDelimitedFrom(inputStream);
                         Log.i(TAG, "Message Received.\n");
 
+                        // safely disconnect if the message is null
+                        if(msg == null) {
+                            break;
+                        }
+
                         // Notify network handlers
                         Client.messageReceived(msg);
                     }
@@ -124,6 +136,8 @@ public class NetworkService extends Service {
             } catch (IOException ex) {
                 Log.e(TAG, "Connection error", ex);
             }
+            Log.i(TAG, "Stopping service");
+
             // deactivate plugins
             mDoorbellPlugin.deactivate();
 
@@ -139,9 +153,4 @@ public class NetworkService extends Service {
         }
     }
 
-
-    private void showServiceNotification() {
-        Log.i(TAG, "Building notification");
-        mServiceNotification = Notifications.showServiceNotification(this);
-    }
 }
