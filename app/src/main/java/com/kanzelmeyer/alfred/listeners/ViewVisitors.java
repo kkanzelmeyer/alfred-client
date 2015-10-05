@@ -10,11 +10,11 @@ import com.kanzelmeyer.alfred.VisitorActivity;
 /**
  * Created by kevin on 10/2/15.
  */
-public class ViewVisitorsActivity implements View.OnClickListener {
+public class ViewVisitors implements View.OnClickListener {
 
     private Context mContext;
 
-    public ViewVisitorsActivity(Context context) {
+    public ViewVisitors(Context context) {
         mContext = context;
     }
 

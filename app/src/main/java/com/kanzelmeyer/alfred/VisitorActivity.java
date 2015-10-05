@@ -18,7 +18,9 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.alfred.common.datamodel.StateDevice;
 import com.alfred.common.datamodel.StateDeviceManager;
+import com.alfred.common.messages.StateDeviceProtos;
 import com.kanzelmeyer.alfred.navigation.NavAdapter;
 import com.kanzelmeyer.alfred.navigation.NavItem;
 import com.kanzelmeyer.alfred.storage.Visitor;
@@ -44,7 +46,15 @@ public class VisitorActivity extends AppCompatActivity {
         // populate listview from visitor log
         createVisitorCards();
 
-        // TODO add statedevicehandler to send message back to server and update device state
+        // get the id of the device that triggered the notification
+        // and update the state device
+        Bundle extras = getIntent().getExtras();
+        if (extras != null) {
+            String deviceId = extras.getString("deviceId");
+            StateDevice doorbell = new StateDevice(StateDeviceManager.getDevice(deviceId));
+            doorbell.setState(StateDeviceProtos.StateDeviceMessage.State.INACTIVE);
+            StateDeviceManager.updateStateDevice(doorbell);
+        }
 
         // enable the back arrow in the action bar
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);

@@ -8,23 +8,16 @@ import android.content.SharedPreferences;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.util.Log;
+import android.widget.Toast;
 
-import com.alfred.common.datamodel.StateDevice;
-import com.alfred.common.datamodel.StateDeviceManager;
 import com.alfred.common.messages.StateDeviceProtos;
-import com.google.protobuf.ByteString;
 import com.kanzelmeyer.alfred.R;
 import com.kanzelmeyer.alfred.SettingsActivity;
 import com.kanzelmeyer.alfred.notifications.Notifications;
-import com.kanzelmeyer.alfred.storage.Visitor;
-import com.kanzelmeyer.alfred.storage.VisitorLog;
-import com.kanzelmeyer.alfred.utils.ConstantManager;
+import com.kanzelmeyer.alfred.plugins.DoorbellPlugin;
 
-import org.apache.commons.io.FileUtils;
-
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.ConnectException;
 import java.net.InetAddress;
 import java.net.Socket;
@@ -37,22 +30,23 @@ public class NetworkListenerService extends Service {
     private static final String TAG = "NetService";
     private Notification mServiceNotification;
     private NetworkThread mNetworkThread = null;
+    private Context mContext;
+    // Plugins
+    private DoorbellPlugin mDoorbellPlugin;
 
-    public NetworkListenerService() {
+    private void setPort(String port) {
+        mHostPort = Integer.valueOf(port);
     }
 
-    public void setPort(String port) {
-        this.mHostPort = Integer.valueOf(port);
-    }
-
-    public void setHostAddress(String hostAddress) {
-        this.mHostAddress = hostAddress;
+    private void setHostAddress(String hostAddress) {
+        mHostAddress = hostAddress;
     }
 
     @Override
     public void onCreate() {
         super.onCreate();
         Log.i(TAG, "Starting network listener");
+        mContext = getApplicationContext();
 
         // Get Preferences
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
@@ -60,6 +54,11 @@ public class NetworkListenerService extends Service {
         setPort(sharedPref.getString(SettingsActivity.KEY_HOST_PORT, getResources().getString(R.string.default_host_port)));
         setHostAddress(sharedPref.getString(SettingsActivity.KEY_HOST_ADDRESS, getResources().getString(R.string.default_host_address)));
 
+        // Activate plugins
+        mDoorbellPlugin = new DoorbellPlugin("doorbell1", mContext);
+        mDoorbellPlugin.activate();
+
+        // start service
         showServiceNotification();
         runListener();
     }
@@ -102,34 +101,31 @@ public class NetworkListenerService extends Service {
             try {
                 InetAddress host = InetAddress.getByName(mHostAddress);
                 mSocket = new Socket(host, mHostPort);
-
+                // Add connection to client
+                Client.addConnection(mSocket);
+                InputStream inputStream;
                 while (true) {
                     if (mSocket.isConnected()) {
-                        StateDeviceProtos.StateDeviceMessage msg = StateDeviceProtos.StateDeviceMessage.parseDelimitedFrom(mSocket.getInputStream());
+                        inputStream = mSocket.getInputStream();
+                        StateDeviceProtos.StateDeviceMessage msg = StateDeviceProtos.StateDeviceMessage.parseDelimitedFrom(inputStream);
                         Log.i(TAG, "Message Received.\n");
 
-                        // Update data model
-                        StateDevice device = new StateDevice(msg);
-                        StateDeviceManager.updateStateDevice(device);
-
-                        // notification and save image
-                        if (msg.getType() == StateDeviceProtos.StateDeviceMessage.Type.DOORBELL) {
-                            if(msg.hasData()) {
-                                sendDoorbellAlertNotification();
-                                saveVisitor(msg);
-                            } else {
-                                Log.i(TAG, msg.toString());
-                            }
-                        } else {
-                            Log.i(TAG, msg.toString());
-                        }
+                        // Notify network handlers
+                        Client.messageReceived(msg);
                     }
                 }
             } catch (ConnectException ce) {
                 Log.e(TAG, "Unable to connect", ce);
+                // TODO make a notification for connection errors
             } catch (IOException ex) {
                 Log.e(TAG, "Connection error", ex);
             }
+            // deactivate plugins
+            mDoorbellPlugin.deactivate();
+
+            // remove client connection
+            Client.removeConnection();
+
             // stop the background service
             SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
             SharedPreferences.Editor editor = sharedPref.edit();
@@ -143,44 +139,5 @@ public class NetworkListenerService extends Service {
     private void showServiceNotification() {
         Log.i(TAG, "Building notification");
         mServiceNotification = Notifications.showServiceNotification(this);
-    }
-
-
-    private void sendDoorbellAlertNotification() {
-        Log.i(TAG, "Building Doorbell Alert notification");
-        Notifications.sendDoorbellAlertNotification(this);
-    }
-
-    private void saveVisitor(StateDeviceProtos.StateDeviceMessage msg) {
-        Context context = this.getApplicationContext();
-        Log.i(TAG, "Logging Event");
-        Visitor visitor = new Visitor();
-        Long time = System.currentTimeMillis();
-        ByteString data = msg.getData();
-        String filename = "visitor" + System.currentTimeMillis() + ".jpg";
-        visitor.setImagePath(filename);
-        File imageDirectory = new File(context.getFilesDir() + ConstantManager.IMAGE_DIR);
-
-        // create the image directory
-        if(!imageDirectory.exists()) {
-            imageDirectory.mkdirs();
-        }
-
-        File image = new File(imageDirectory, filename);
-        try {
-            if(!image.exists()) {
-                Log.i(TAG, "File being created? " + image.createNewFile());
-            }
-            FileOutputStream fos = new FileOutputStream(image, true);
-            fos.write(data.toByteArray());
-            fos.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        // TODO manage number of photos stored on device (remove old files)
-        visitor.setTime(time);
-        visitor.setLocation(msg.getName());
-        VisitorLog.logVisitor(visitor, context);
     }
 }

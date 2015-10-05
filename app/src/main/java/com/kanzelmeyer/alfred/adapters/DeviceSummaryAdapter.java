@@ -13,7 +13,7 @@ import android.widget.TextView;
 import com.alfred.common.datamodel.StateDevice;
 import com.alfred.common.messages.StateDeviceProtos;
 import com.kanzelmeyer.alfred.R;
-import com.kanzelmeyer.alfred.listeners.ViewVisitorsActivity;
+import com.kanzelmeyer.alfred.listeners.ViewVisitors;
 import com.kanzelmeyer.alfred.storage.VisitorLog;
 
 import org.apache.commons.lang3.text.WordUtils;
@@ -134,7 +134,8 @@ public class DeviceSummaryAdapter extends RecyclerView.Adapter<DeviceSummaryAdap
                 // Set action text
                 vh.getAction().setText("VIEW");
 
-                vh.getAction().setOnClickListener(new ViewVisitorsActivity(mContext));
+                // Set click listeners
+                vh.getCardview().setOnClickListener(new ViewVisitors(mContext));
 
                 break;
 

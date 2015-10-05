@@ -6,7 +6,7 @@
     <string name="title_activity_main">Alfred</string>
 
     <string name="local_service_started">Alfred is Running</string>
-    <string name="local_service_label">Listening for traffic</string>
+    <string name="local_service_label">Alfred is Running</string>
     <string name="doorbell_alert">Visitor at the door!</string>
     <string name="doorbell_alert_label">Shall I send them away?</string>
 
