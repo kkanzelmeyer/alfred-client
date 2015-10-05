@@ -18,6 +18,7 @@ import com.kanzelmeyer.alfred.utils.ConstantManager;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.Socket;
 
 /**
@@ -28,7 +29,6 @@ public class DoorbellPlugin {
     private static final String TAG = "DoorbellPlugin";
     private DoorbellNetworkHandler mNetworkHandler = null;
     private DoorbellStateHandler mStateHandler = null;
-    private Socket mConnection = null;
     private Context mContext;
     private String mId = "";
 
@@ -75,7 +75,6 @@ public class DoorbellPlugin {
         @Override
         public void onConnect(Socket connection) {
             Log.i(TAG, "Network Connection added");
-            mConnection = connection;
         }
 
         @Override
@@ -85,7 +84,7 @@ public class DoorbellPlugin {
             if(msg != null) {
                 StateDevice device = new StateDevice(msg);
 
-                // update the device if the state is different
+                // add or update the device
                 StateDeviceManager.updateStateDevice(device);
 
                 // notification and save image
@@ -143,7 +142,7 @@ public class DoorbellPlugin {
 
         @Override
         public void onAddDevice(StateDevice stateDevice) {
-            Log.i(TAG, "Device added");
+            Log.i(TAG, "Device added: " + stateDevice.toString());
         }
 
         @Override
@@ -161,8 +160,10 @@ public class DoorbellPlugin {
                 // Send the message
                 try {
                     Log.i(TAG, "Sending message: \n" + msg.toString());
-                    msg.writeDelimitedTo(mConnection.getOutputStream());
+                    OutputStream out = Client.getConnection().getOutputStream();
+                    msg.writeDelimitedTo(out);
                 } catch (IOException e) {
+                    Client.removeConnection();
                     Log.e(TAG, "unable to write to output stream", e);
                 }
             }
@@ -170,6 +171,7 @@ public class DoorbellPlugin {
 
         @Override
         public void onRemoveDevice(StateDevice stateDevice) {
+
             Log.i(TAG, "Device removed");
         }
     }

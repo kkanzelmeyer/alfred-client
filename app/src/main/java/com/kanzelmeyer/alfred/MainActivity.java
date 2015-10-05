@@ -25,7 +25,7 @@ import com.alfred.common.datamodel.StateDeviceManager;
 import com.alfred.common.messages.StateDeviceProtos;
 import com.kanzelmeyer.alfred.navigation.NavAdapter;
 import com.kanzelmeyer.alfred.navigation.NavItem;
-import com.kanzelmeyer.alfred.network.NetworkListenerService;
+import com.kanzelmeyer.alfred.network.NetworkService;
 import com.kanzelmeyer.alfred.adapters.DeviceSummaryAdapter;
 
 import java.util.ArrayList;
@@ -231,7 +231,7 @@ public class MainActivity extends AppCompatActivity {
      * Helper method to manage the network service
      */
     public void manageService() {
-        Intent serviceIntent = new Intent(this, NetworkListenerService.class);
+        Intent serviceIntent = new Intent(this, NetworkService.class);
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(mContext);
         boolean preferenceRun = sharedPref.getBoolean(SettingsActivity.KEY_SERVICE_RUN, true);
         if(preferenceRun) {

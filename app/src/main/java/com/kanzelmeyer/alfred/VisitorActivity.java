@@ -51,9 +51,7 @@ public class VisitorActivity extends AppCompatActivity {
         Bundle extras = getIntent().getExtras();
         if (extras != null) {
             String deviceId = extras.getString("deviceId");
-            StateDevice doorbell = new StateDevice(StateDeviceManager.getDevice(deviceId));
-            doorbell.setState(StateDeviceProtos.StateDeviceMessage.State.INACTIVE);
-            StateDeviceManager.updateStateDevice(doorbell);
+            StateDeviceManager.updateStateDevice(deviceId, StateDeviceProtos.StateDeviceMessage.State.INACTIVE);
         }
 
         // enable the back arrow in the action bar
@@ -78,16 +76,6 @@ public class VisitorActivity extends AppCompatActivity {
                 NavUtils.navigateUpFromSameTask(this);
                 break;
         }
-//
-//        //noinspection SimplifiableIfStatement
-//        if (id == R.id.action_settings) {
-//            return true;
-//        }
-
-        // Activate the navigation drawer toggle
-//        if (mDrawerToggle.onOptionsItemSelected(item)) {
-//            return true;
-//        }
 
         return super.onOptionsItemSelected(item);
     }
@@ -95,13 +83,11 @@ public class VisitorActivity extends AppCompatActivity {
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
-//        mDrawerToggle.onConfigurationChanged(newConfig);
     }
 
     @Override
     protected void onPostCreate(Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
-//        mDrawerToggle.syncState();
     }
 
     /**
@@ -117,83 +103,4 @@ public class VisitorActivity extends AppCompatActivity {
         visitors.setLayoutManager(llm);
         visitors.setAdapter(adapter);
     }
-
-    /**
-     * Helper method to populate the side nav
-     */
-    public void populateNav() {
-        // get list of array resources
-        String[] navTitles = getResources().getStringArray(R.array.nav_drawer_items);
-        TypedArray navIcons = getResources().obtainTypedArray(R.array.nav_drawer_icons);
-
-        // get the navigation drawer and listview
-        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawerLayout);
-        mDrawerList = (ListView) findViewById(R.id.mainMenu);
-
-        // Add objects to the list of Nav Items
-        ArrayList<NavItem> navItems = new ArrayList<>();
-        for(int i = 0; i< navTitles.length; i++) {
-            navItems.add(new NavItem(navTitles[i], navIcons.getResourceId(i, -1)));
-        }
-
-        // set adapter to list view
-        NavAdapter navAdapter = new NavAdapter(navItems, getApplicationContext());
-        mDrawerList.setAdapter(navAdapter);
-
-        // TODO set click listeners
-        mDrawerList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Toast.makeText(VisitorActivity.this, "Time for an upgrade!", Toast.LENGTH_SHORT).show();
-            }
-        });
-    }
-
-    /**
-     * Helper method to construct the side nav
-     */
-    public void buildNav() {
-
-        mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout,
-                R.string.drawer_open, R.string.drawer_close) {
-
-            /** Called when a drawer has settled in a completely open state. */
-            public void onDrawerOpened(View drawerView) {
-                super.onDrawerOpened(drawerView);
-                Log.i(TAG, "Drawer opened");
-                getSupportActionBar().setTitle("Menu");
-                invalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
-            }
-
-            /** Called when a drawer has settled in a completely closed state. */
-            public void onDrawerClosed(View view) {
-                super.onDrawerClosed(view);
-                Log.i(TAG, "Drawer closed");
-                getSupportActionBar().setTitle("Alfred");
-                invalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
-            }
-        };
-
-        mDrawerToggle.setDrawerIndicatorEnabled(true);
-        mDrawerLayout.setDrawerListener(mDrawerToggle);
-
-
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setHomeButtonEnabled(true);
-    }
-
-    /**
-     * Method to create visitor entries for testing
-     */
-    public void addVisitors() {
-
-        for(int i = 0; i < 3; i++) {
-            Visitor v = new Visitor();
-            v.setImagePath("");
-            v.setLocation("Front Door");
-            v.setTime(System.currentTimeMillis());
-            VisitorLog.logVisitor(v, mContext);
-        }
-    }
-
 }
