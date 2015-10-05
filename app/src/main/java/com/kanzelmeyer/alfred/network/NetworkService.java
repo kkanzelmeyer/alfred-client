@@ -22,7 +22,7 @@ import java.net.ConnectException;
 import java.net.InetAddress;
 import java.net.Socket;
 
-public class NetworkListenerService extends Service {
+public class NetworkService extends Service {
 
     private int mHostPort = 56;
     private String mHostAddress = "192.168.1.25";
@@ -96,6 +96,10 @@ public class NetworkListenerService extends Service {
         mNetworkThread.start();
     }
 
+    /**
+     * This thread is responsible for waiting on incoming messages
+     * and updating the client handlers when a message is received
+     */
     private class NetworkThread extends Thread {
         public void run() {
             try {

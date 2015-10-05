@@ -33,7 +33,17 @@ public class Client {
      * Set the network connection to null
      */
     public static void removeConnection() {
+
         mConnection = null;
+    }
+
+    /**
+     *
+     * @return
+     */
+    public static Socket getConnection() {
+
+        return mConnection;
     }
 
     /**

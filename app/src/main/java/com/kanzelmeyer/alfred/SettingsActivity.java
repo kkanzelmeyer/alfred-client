@@ -10,7 +10,7 @@ import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
-import com.kanzelmeyer.alfred.network.NetworkListenerService;
+import com.kanzelmeyer.alfred.network.NetworkService;
 
 public class SettingsActivity extends PreferenceActivity {
 
@@ -78,7 +78,7 @@ public class SettingsActivity extends PreferenceActivity {
             if (key.equals(KEY_SERVICE_RUN)) {
                 boolean preferenceRunService = sharedPreferences.getBoolean(KEY_SERVICE_RUN, true);
                 Intent serviceIntent;
-                serviceIntent = new Intent(mContext, NetworkListenerService.class);
+                serviceIntent = new Intent(mContext, NetworkService.class);
                 if(preferenceRunService) {
                     mContext.startService(serviceIntent);
                     // disable network preferences

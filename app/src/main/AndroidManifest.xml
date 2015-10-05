@@ -32,7 +32,7 @@
         </activity>
 
         <!-- Services -->
-        <service android:name="com.kanzelmeyer.alfred.network.NetworkListenerService" android:enabled="true" android:exported="true">
+        <service android:name=".network.NetworkService" android:enabled="true" android:exported="true">
         </service>
     </application>
 
