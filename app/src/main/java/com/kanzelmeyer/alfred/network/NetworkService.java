@@ -10,13 +10,11 @@ import android.content.SharedPreferences;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.alfred.common.messages.StateDeviceProtos;
 import com.kanzelmeyer.alfred.MainActivity;
 import com.kanzelmeyer.alfred.R;
 import com.kanzelmeyer.alfred.SettingsActivity;
-import com.kanzelmeyer.alfred.notifications.Notifications;
 import com.kanzelmeyer.alfred.plugins.DoorbellPlugin;
 
 import java.io.IOException;
@@ -27,23 +25,35 @@ import java.net.Socket;
 
 public class NetworkService extends Service {
 
+    // Network members
     private int mHostPort = 56;
     private String mHostAddress = "192.168.1.25";
     private Socket mSocket = null;
-    private static final String TAG = "NetService";
+    // Notification
+    private NotificationManager mNm;
+    private Notification mServiceNotification = null;
+    // Logging tag
+    private static final String TAG = "NetworkService";
+    // Members
     private NetworkThread mNetworkThread = null;
-    // notification
-    private NotificationManager mNotificationManager;
-    private Notification mServiceNotification;
-    public static final int SERVICE_NOTIFICATION_ID = 7986;
     private Context mContext;
     // Plugins
     private DoorbellPlugin mDoorbellPlugin;
 
+    /**
+     * Setter for host port
+     *
+     * @param port
+     */
     private void setPort(String port) {
         mHostPort = Integer.valueOf(port);
     }
 
+    /**
+     * Setter for host address
+     *
+     * @param hostAddress
+     */
     private void setHostAddress(String hostAddress) {
         mHostAddress = hostAddress;
     }
@@ -55,17 +65,21 @@ public class NetworkService extends Service {
         mContext = getApplicationContext();
 
         // Get Preferences
-        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
+        SharedPreferences sharedPref =
+                PreferenceManager.getDefaultSharedPreferences(getBaseContext());
+
         // Set network info from preferences
-        setPort(sharedPref.getString(SettingsActivity.KEY_HOST_PORT, getResources().getString(R.string.default_host_port)));
-        setHostAddress(sharedPref.getString(SettingsActivity.KEY_HOST_ADDRESS, getResources().getString(R.string.default_host_address)));
+        setPort(sharedPref.getString(SettingsActivity.KEY_HOST_PORT,
+                getResources().getString(R.string.default_host_port)));
+        setHostAddress(sharedPref.getString(SettingsActivity.KEY_HOST_ADDRESS,
+                getResources().getString(R.string.default_host_address)));
 
         // Activate plugins
         mDoorbellPlugin = new DoorbellPlugin("doorbell1", mContext);
         mDoorbellPlugin.activate();
 
         // start service
-        Notifications.showServiceNotification(mContext);
+        showServiceNotification();
         runListener();
     }
 
@@ -79,14 +93,9 @@ public class NetworkService extends Service {
         Log.i(TAG, "Stopping network listener");
         super.onDestroy();
         mNetworkThread.interrupt();
-        if(mSocket != null) {
-            try {
-                mSocket.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
+        Client.removeConnection();
+        mSocket = null;
+        mDoorbellPlugin.deactivate();
     }
 
     @Override
@@ -95,12 +104,17 @@ public class NetworkService extends Service {
         throw new UnsupportedOperationException("Not yet implemented");
     }
 
+    /**
+     * Helper method to start the network thread
+     */
     private void runListener() {
         Log.i(TAG, "Starting Foreground service");
-        startForeground(Notifications.SERVICE_NOTIFICATION_ID, mServiceNotification);
-        mNetworkThread = new NetworkThread();
-        mNetworkThread.start();
-
+        if(mServiceNotification != null) {
+            startForeground(R.string.network_service_notification_id,
+                    mServiceNotification);
+            mNetworkThread = new NetworkThread();
+            mNetworkThread.start();
+        }
     }
 
     /**
@@ -118,11 +132,12 @@ public class NetworkService extends Service {
                 while (true) {
                     if (mSocket.isConnected()) {
                         inputStream = mSocket.getInputStream();
-                        StateDeviceProtos.StateDeviceMessage msg = StateDeviceProtos.StateDeviceMessage.parseDelimitedFrom(inputStream);
-                        Log.i(TAG, "Message Received.\n");
+                        StateDeviceProtos.StateDeviceMessage msg =
+                                StateDeviceProtos.StateDeviceMessage.parseDelimitedFrom(inputStream);
+                        Log.i(TAG, "Message Received");
 
                         // safely disconnect if the message is null
-                        if(msg == null) {
+                        if (msg == null) {
                             break;
                         }
 
@@ -149,8 +164,35 @@ public class NetworkService extends Service {
             SharedPreferences.Editor editor = sharedPref.edit();
             editor.putBoolean(SettingsActivity.KEY_SERVICE_RUN, false);
             editor.commit();
-            this.interrupt();
+
+            // stop service
+            stopSelf();
         }
     }
 
+    /**
+     * Helper method to display the service notification
+     */
+    public void showServiceNotification() {
+        CharSequence text = mContext.getText(R.string.local_service_started);
+
+        // The PendingIntent to launch our activity if the user selects this notification
+        PendingIntent contentIntent = PendingIntent.getActivity(mContext.getApplicationContext(), 0,
+                new Intent(mContext, MainActivity.class), 0);
+
+        // Set the info for the views that show in the notification panel.
+        mServiceNotification = new Notification.Builder(mContext)
+                .setSmallIcon(R.mipmap.ic_bowtie_24dp)  // the status icon
+                .setTicker(text)  // the status text
+                .setWhen(System.currentTimeMillis())  // the time stamp
+                .setContentTitle(mContext.getText(R.string.local_service_label))  // the label of the entry
+                .setContentText(text)  // the contents of the entry
+                .setContentIntent(contentIntent)  // The intent to send when the entry is clicked
+                .build();
+
+        mNm = (NotificationManager) mContext.getSystemService(Context.NOTIFICATION_SERVICE);
+        // Send the notification.
+        Log.i(TAG, "Sending notification");
+        mNm.notify(R.string.network_service_notification_id, mServiceNotification);
+    }
 }

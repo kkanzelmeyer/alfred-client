@@ -1,6 +1,7 @@
 package com.kanzelmeyer.alfred.network;
 
 import com.alfred.common.messages.StateDeviceProtos;
+import com.alfred.common.network.NetworkHandler;
 
 import java.net.Socket;
 import java.util.ArrayList;
@@ -11,9 +12,14 @@ import java.util.List;
  */
 public class Client {
 
+    // Instance of the client connection
     private static Socket mConnection;
 
+    // List of network handlers
     private static List<NetworkHandler> networkHandlers = new ArrayList<>();
+
+    // List of service handlers
+    private static List<ServiceHandler> serviceHandlers = new ArrayList<>();
 
     /**
      * Add a Socket connection to the client
@@ -38,7 +44,7 @@ public class Client {
     }
 
     /**
-     *
+     * Get the client connection instance
      * @return
      */
     public static Socket getConnection() {
@@ -87,6 +93,22 @@ public class Client {
     }
 
 
+    /**
+     * Add a service handler
+     * @param handler
+     */
+    public static void addServiceHandler(ServiceHandler handler) {
+        if(!serviceHandlers.contains(handler)) {
+            serviceHandlers.add(handler);
+        }
+    }
+
+
+    public static void removeServiceHandler(ServiceHandler handler) {
+        if(serviceHandlers.contains(handler)) {
+            serviceHandlers.remove(handler);
+        }
+    }
 
 
 }

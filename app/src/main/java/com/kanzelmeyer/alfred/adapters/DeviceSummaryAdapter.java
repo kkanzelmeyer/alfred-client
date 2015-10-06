@@ -1,6 +1,7 @@
 package com.kanzelmeyer.alfred.adapters;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
@@ -13,7 +14,7 @@ import android.widget.TextView;
 import com.alfred.common.datamodel.StateDevice;
 import com.alfred.common.messages.StateDeviceProtos;
 import com.kanzelmeyer.alfred.R;
-import com.kanzelmeyer.alfred.listeners.ViewVisitors;
+import com.kanzelmeyer.alfred.VisitorActivity;
 import com.kanzelmeyer.alfred.storage.VisitorLog;
 
 import org.apache.commons.lang3.text.WordUtils;
@@ -135,7 +136,13 @@ public class DeviceSummaryAdapter extends RecyclerView.Adapter<DeviceSummaryAdap
                 vh.getAction().setText("VIEW");
 
                 // Set click listeners
-                vh.getCardview().setOnClickListener(new ViewVisitors(mContext));
+                vh.getCardview().setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Intent intent = new Intent(mContext, VisitorActivity.class);
+                        mContext.startActivity(intent);
+                    }
+                });
 
                 break;
 

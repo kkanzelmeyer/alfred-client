@@ -19,15 +19,19 @@ import android.view.View;
 import android.support.v4.widget.DrawerLayout;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.alfred.common.datamodel.StateDevice;
 import com.alfred.common.datamodel.StateDeviceManager;
 import com.alfred.common.messages.StateDeviceProtos;
+import com.alfred.common.network.NetworkHandler;
 import com.kanzelmeyer.alfred.navigation.NavAdapter;
 import com.kanzelmeyer.alfred.navigation.NavItem;
+import com.kanzelmeyer.alfred.network.Client;
 import com.kanzelmeyer.alfred.network.NetworkService;
 import com.kanzelmeyer.alfred.adapters.DeviceSummaryAdapter;
 
+import java.net.Socket;
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
@@ -52,8 +56,10 @@ public class MainActivity extends AppCompatActivity {
         buildNav();
 
         // Load Preferences
-        PreferenceManager.setDefaultValues(this, R.xml.pref_general, false);
-        manageService();
+//        PreferenceManager.setDefaultValues(this, R.xml.pref_general, false);
+//        manageService();
+
+        // TODO handler to update UI when a device is updated
     }
 
     @Override
@@ -233,11 +239,12 @@ public class MainActivity extends AppCompatActivity {
     public void manageService() {
         Intent serviceIntent = new Intent(this, NetworkService.class);
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(mContext);
-        boolean preferenceRun = sharedPref.getBoolean(SettingsActivity.KEY_SERVICE_RUN, true);
+        boolean preferenceRun = sharedPref.getBoolean(SettingsActivity.KEY_SERVICE_RUN, false);
         if(preferenceRun) {
             startService(serviceIntent);
         } else {
             stopService(serviceIntent);
         }
     }
+
 }

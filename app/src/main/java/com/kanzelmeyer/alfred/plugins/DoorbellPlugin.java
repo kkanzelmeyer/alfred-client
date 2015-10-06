@@ -7,9 +7,9 @@ import com.alfred.common.datamodel.StateDevice;
 import com.alfred.common.datamodel.StateDeviceManager;
 import com.alfred.common.handlers.StateDeviceHandler;
 import com.alfred.common.messages.StateDeviceProtos;
+import com.alfred.common.network.NetworkHandler;
 import com.google.protobuf.ByteString;
 import com.kanzelmeyer.alfred.network.Client;
-import com.kanzelmeyer.alfred.network.NetworkHandler;
 import com.kanzelmeyer.alfred.notifications.Notifications;
 import com.kanzelmeyer.alfred.storage.Visitor;
 import com.kanzelmeyer.alfred.storage.VisitorLog;
@@ -22,7 +22,15 @@ import java.io.OutputStream;
 import java.net.Socket;
 
 /**
- * Created by kevin on 10/4/15.
+ * This plugin handles the behavior for incoming doorbell event messages
+ * and corresponding doorbell state changes. The general behavior for a doorbell
+ * device is:
+ * - The client receives the message and, if provided, saves the image
+ * - The client updates it's state
+ * - If a client sets the device state to Inactive it sends a message to the server
+ * - The server receives the state update and sends another message to each client
+ * - The originating client will ignore the server's second message because it's state
+ * is already updated
  */
 public class DoorbellPlugin {
 
@@ -41,10 +49,12 @@ public class DoorbellPlugin {
      * Called to activate the plugin
      */
     public void activate() {
+        // add the network handler to the client
         if(mNetworkHandler == null) {
             mNetworkHandler = new DoorbellNetworkHandler();
             Client.addNetworkHandler(mNetworkHandler);
         }
+        // add the state handler to the device manager
         if(mStateHandler == null) {
             mStateHandler = new DoorbellStateHandler();
             StateDeviceManager.addDeviceHandler(mId, mStateHandler);
@@ -106,7 +116,11 @@ public class DoorbellPlugin {
             }
         }
 
-
+        /**
+         * Helper method to get the contents of the visitor message, save the image,
+         * and save the event
+         * @param msg
+         */
         private void saveVisitor(StateDeviceProtos.StateDeviceMessage msg) {
             Log.i(TAG, "Logging Event");
             Visitor visitor = new Visitor();
@@ -116,7 +130,7 @@ public class DoorbellPlugin {
             visitor.setImagePath(filename);
             File imageDirectory = new File(mContext.getFilesDir() + ConstantManager.IMAGE_DIR);
 
-            // create the image directory
+            // create the image directory if it doesn't exist
             if(!imageDirectory.exists()) {
                 Log.i(TAG, "Directory being created? " + imageDirectory.mkdirs());
             }

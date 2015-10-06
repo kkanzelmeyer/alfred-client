@@ -22,42 +22,9 @@ import com.kanzelmeyer.alfred.VisitorActivity;
  */
 public class Notifications {
 
-    public static final int SERVICE_NOTIFICATION_ID = 7986;
-    public static final int EVENT_NOTIFICATION_ID = 31912;
+    public static final int EVENT_NOTIFICATION_ID = 7986;
     private static final String TAG = "NM";
 
-
-    /**
-     * Notification for when the background service is running
-     * @param mContext
-     * @return
-     */
-    public static Notification showServiceNotification(Context mContext) {
-        NotificationManager mNM;
-        Notification serviceNotification;
-
-        CharSequence text = mContext.getText(R.string.local_service_started);
-
-        // The PendingIntent to launch our activity if the user selects this notification
-        PendingIntent contentIntent = PendingIntent.getActivity(mContext.getApplicationContext(), 0,
-                new Intent(mContext, MainActivity.class), 0);
-
-        // Set the info for the views that show in the notification panel.
-        serviceNotification = new Notification.Builder(mContext)
-                .setSmallIcon(R.mipmap.ic_bowtie_24dp)  // the status icon
-                .setTicker(text)  // the status text
-                .setWhen(System.currentTimeMillis())  // the time stamp
-                .setContentTitle(mContext.getText(R.string.local_service_label))  // the label of the entry
-                .setContentText(text)  // the contents of the entry
-                .setContentIntent(contentIntent)  // The intent to send when the entry is clicked
-                .build();
-
-        mNM = (NotificationManager) mContext.getSystemService(Context.NOTIFICATION_SERVICE);
-        // Send the notification.
-        Log.i(TAG, "Sending notification");
-        mNM.notify(SERVICE_NOTIFICATION_ID, serviceNotification);
-        return serviceNotification;
-    }
 
     /**
      * Notification for when a visitor is detected
