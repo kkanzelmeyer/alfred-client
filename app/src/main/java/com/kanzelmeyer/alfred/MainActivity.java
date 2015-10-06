@@ -19,19 +19,17 @@ import android.view.View;
 import android.support.v4.widget.DrawerLayout;
 import android.widget.AdapterView;
 import android.widget.ListView;
-import android.widget.Toast;
 
 import com.alfred.common.datamodel.StateDevice;
 import com.alfred.common.datamodel.StateDeviceManager;
 import com.alfred.common.messages.StateDeviceProtos;
-import com.alfred.common.network.NetworkHandler;
-import com.kanzelmeyer.alfred.navigation.NavAdapter;
+import com.kanzelmeyer.alfred.adapters.NavAdapter;
 import com.kanzelmeyer.alfred.navigation.NavItem;
 import com.kanzelmeyer.alfred.network.Client;
 import com.kanzelmeyer.alfred.network.NetworkService;
 import com.kanzelmeyer.alfred.adapters.DeviceSummaryAdapter;
+import com.kanzelmeyer.alfred.network.UIUpdateHandler;
 
-import java.net.Socket;
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
@@ -44,6 +42,8 @@ public class MainActivity extends AppCompatActivity {
     // Recyclerview items
     private RecyclerView mDeviceSummary;
     private DeviceSummaryAdapter mDeviceAdapter;
+    // UI Update Handler
+    private UIChangeHandler mUIChangeHandler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,6 +60,8 @@ public class MainActivity extends AppCompatActivity {
 //        manageService();
 
         // TODO handler to update UI when a device is updated
+        mUIChangeHandler = new UIChangeHandler();
+        Client.addUIUpdateHandler(mUIChangeHandler);
     }
 
     @Override
@@ -244,6 +246,17 @@ public class MainActivity extends AppCompatActivity {
             startService(serviceIntent);
         } else {
             stopService(serviceIntent);
+        }
+    }
+
+    /**
+     * Handler class to update the display when a device is updated
+     */
+    private class UIChangeHandler implements UIUpdateHandler {
+
+        @Override
+        public void refreshOnDeviceUpdate() {
+            getDevices();
         }
     }
 

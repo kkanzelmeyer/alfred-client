@@ -164,6 +164,7 @@ public class DoorbellPlugin {
         @Override
         public void onAddDevice(StateDevice stateDevice) {
             Log.i(TAG, "Device added: " + stateDevice.toString());
+            Client.refreshUIHandlers();
         }
 
         @Override
@@ -187,6 +188,8 @@ public class DoorbellPlugin {
                     Client.removeConnection();
                     Log.e(TAG, "unable to write to output stream", e);
                 }
+                // notify ui handler
+                Client.refreshUIHandlers();
             }
         }
 

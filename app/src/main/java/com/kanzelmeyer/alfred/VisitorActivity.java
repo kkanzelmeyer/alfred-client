@@ -2,7 +2,6 @@ package com.kanzelmeyer.alfred;
 
 import android.content.Context;
 import android.content.res.Configuration;
-import android.content.res.TypedArray;
 import android.os.Bundle;
 import android.support.v4.app.NavUtils;
 import android.support.v4.widget.DrawerLayout;
@@ -13,16 +12,10 @@ import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.AdapterView;
 import android.widget.ListView;
-import android.widget.Toast;
 
-import com.alfred.common.datamodel.StateDevice;
 import com.alfred.common.datamodel.StateDeviceManager;
 import com.alfred.common.messages.StateDeviceProtos;
-import com.kanzelmeyer.alfred.navigation.NavAdapter;
-import com.kanzelmeyer.alfred.navigation.NavItem;
 import com.kanzelmeyer.alfred.storage.Visitor;
 import com.kanzelmeyer.alfred.storage.VisitorLog;
 import com.kanzelmeyer.alfred.adapters.VisitorAdapter;

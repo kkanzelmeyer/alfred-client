@@ -1,4 +1,4 @@
-package com.kanzelmeyer.alfred.navigation;
+package com.kanzelmeyer.alfred.adapters;
 
 import android.app.Activity;
 import android.content.Context;
@@ -10,6 +10,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.kanzelmeyer.alfred.R;
+import com.kanzelmeyer.alfred.navigation.NavItem;
 
 import java.util.ArrayList;
 

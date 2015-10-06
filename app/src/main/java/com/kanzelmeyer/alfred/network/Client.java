@@ -21,6 +21,12 @@ public class Client {
     // List of service handlers
     private static List<ServiceHandler> serviceHandlers = new ArrayList<>();
 
+    /* List of UI Update Handlers - an activity can register as one of these handlers
+       if it needs to be notified when a device is updated, so it can redraw something
+       if needed
+     */
+    private static List<UIUpdateHandler> uiUpdateHandlers = new ArrayList<>();
+
     /**
      * Add a Socket connection to the client
      * @param connection
@@ -103,10 +109,46 @@ public class Client {
         }
     }
 
-
+    /**
+     * Remove service handler
+     * @param handler
+     */
     public static void removeServiceHandler(ServiceHandler handler) {
         if(serviceHandlers.contains(handler)) {
             serviceHandlers.remove(handler);
+        }
+    }
+
+    /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+     *  UI Update Handlers
+     * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
+    /**
+     *
+     * @param handler
+     */
+    public static void addUIUpdateHandler(UIUpdateHandler handler) {
+        if(!uiUpdateHandlers.contains(handler)) {
+            uiUpdateHandlers.add(handler);
+        }
+    }
+
+    /**
+     *
+     * @param handler
+     */
+    public static void removeUIUpdateHandler(UIUpdateHandler handler) {
+        if(uiUpdateHandlers.contains(handler)) {
+            uiUpdateHandlers.remove(handler);
+        }
+    }
+
+    /**
+     *
+     */
+    public static void refreshUIHandlers() {
+        for(UIUpdateHandler handler : uiUpdateHandlers) {
+            handler.refreshOnDeviceUpdate();
         }
     }
 
