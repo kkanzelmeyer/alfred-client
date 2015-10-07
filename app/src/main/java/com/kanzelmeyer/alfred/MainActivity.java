@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.content.res.TypedArray;
+import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
@@ -31,6 +32,7 @@ import com.kanzelmeyer.alfred.network.NetworkService;
 import com.kanzelmeyer.alfred.adapters.DeviceSummaryAdapter;
 
 import java.util.ArrayList;
+import java.util.logging.StreamHandler;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -42,6 +44,8 @@ public class MainActivity extends AppCompatActivity {
     // Recyclerview items
     private RecyclerView mDeviceSummary;
     private DeviceSummaryAdapter mDeviceAdapter;
+    //
+    private Handler mHandler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,6 +62,8 @@ public class MainActivity extends AppCompatActivity {
 //        manageService();
 
         // TODO handler to update UI when a device is updated
+        mHandler = new Handler();
+        StateDeviceManager.addDeviceHandler(new ViewRefresher());
     }
 
     @Override
@@ -252,4 +258,42 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     *
+     */
+    private class ViewRefresher implements StateDeviceHandler {
+
+        @Override
+        public void onAddDevice(StateDevice stateDevice) {
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    Log.i(TAG, "Device updated - refreshing views");
+                    getDevices();
+                }
+            });
+        }
+
+        @Override
+        public void onUpdateDevice(StateDevice stateDevice) {
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    Log.i(TAG, "Device updated - refreshing views");
+                    getDevices();
+                }
+            });
+        }
+
+        @Override
+        public void onRemoveDevice(StateDevice stateDevice) {
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    Log.i(TAG, "Device updated - refreshing views");
+                    getDevices();
+                }
+            });
+        }
+    }
 }
