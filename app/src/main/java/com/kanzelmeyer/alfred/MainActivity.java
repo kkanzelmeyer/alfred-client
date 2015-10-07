@@ -22,13 +22,13 @@ import android.widget.ListView;
 
 import com.alfred.common.datamodel.StateDevice;
 import com.alfred.common.datamodel.StateDeviceManager;
+import com.alfred.common.handlers.StateDeviceHandler;
 import com.alfred.common.messages.StateDeviceProtos;
 import com.kanzelmeyer.alfred.adapters.NavAdapter;
 import com.kanzelmeyer.alfred.navigation.NavItem;
 import com.kanzelmeyer.alfred.network.Client;
 import com.kanzelmeyer.alfred.network.NetworkService;
 import com.kanzelmeyer.alfred.adapters.DeviceSummaryAdapter;
-import com.kanzelmeyer.alfred.network.UIUpdateHandler;
 
 import java.util.ArrayList;
 
@@ -42,8 +42,6 @@ public class MainActivity extends AppCompatActivity {
     // Recyclerview items
     private RecyclerView mDeviceSummary;
     private DeviceSummaryAdapter mDeviceAdapter;
-    // UI Update Handler
-    private UIChangeHandler mUIChangeHandler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,15 +58,19 @@ public class MainActivity extends AppCompatActivity {
 //        manageService();
 
         // TODO handler to update UI when a device is updated
-        mUIChangeHandler = new UIChangeHandler();
-        Client.addUIUpdateHandler(mUIChangeHandler);
     }
 
     @Override
     protected void onResume() {
-        Log.i(TAG, "On resume");
+        Log.i(TAG, "Resuming main activity");
         super.onResume();
         getDevices();
+    }
+
+    @Override
+    protected  void onDestroy() {
+        Log.i(TAG, "Activity destroyed");
+        super.onDestroy();
     }
 
     @Override
@@ -114,7 +116,8 @@ public class MainActivity extends AppCompatActivity {
      */
     private void getDevices() {
         // create adapter
-        ArrayList<StateDevice> deviceArray = new ArrayList<>(StateDeviceManager.getAllDevices().values());
+        ArrayList<StateDevice> deviceArray =
+                new ArrayList<>(StateDeviceManager.getAllDevices().values());
         mDeviceAdapter = new DeviceSummaryAdapter(deviceArray, mContext);
         mDeviceSummary = (RecyclerView) findViewById(R.id.deviceSummaryRecyclerView);
         LinearLayoutManager llm = new LinearLayoutManager(mContext);
@@ -246,17 +249,6 @@ public class MainActivity extends AppCompatActivity {
             startService(serviceIntent);
         } else {
             stopService(serviceIntent);
-        }
-    }
-
-    /**
-     * Handler class to update the display when a device is updated
-     */
-    private class UIChangeHandler implements UIUpdateHandler {
-
-        @Override
-        public void refreshOnDeviceUpdate() {
-            getDevices();
         }
     }
 

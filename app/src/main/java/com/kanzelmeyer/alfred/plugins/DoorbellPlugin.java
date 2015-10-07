@@ -38,11 +38,9 @@ public class DoorbellPlugin {
     private DoorbellNetworkHandler mNetworkHandler = null;
     private DoorbellStateHandler mStateHandler = null;
     private Context mContext;
-    private String mId = "";
 
-    public DoorbellPlugin(String id, Context context) {
+    public DoorbellPlugin(Context context) {
         mContext = context;
-        mId = id;
     }
 
     /**
@@ -57,7 +55,7 @@ public class DoorbellPlugin {
         // add the state handler to the device manager
         if(mStateHandler == null) {
             mStateHandler = new DoorbellStateHandler();
-            StateDeviceManager.addDeviceHandler(mId, mStateHandler);
+            StateDeviceManager.addDeviceHandler(mStateHandler);
         }
     }
 
@@ -70,7 +68,7 @@ public class DoorbellPlugin {
             mNetworkHandler = null;
         }
         if(mStateHandler != null) {
-            StateDeviceManager.removeDeviceHandler(mId);
+            StateDeviceManager.removeDeviceHandler(mStateHandler);
             mStateHandler = null;
         }
     }
@@ -164,7 +162,6 @@ public class DoorbellPlugin {
         @Override
         public void onAddDevice(StateDevice stateDevice) {
             Log.i(TAG, "Device added: " + stateDevice.toString());
-            Client.refreshUIHandlers();
         }
 
         @Override
@@ -188,8 +185,6 @@ public class DoorbellPlugin {
                     Client.removeConnection();
                     Log.e(TAG, "unable to write to output stream", e);
                 }
-                // notify ui handler
-                Client.refreshUIHandlers();
             }
         }
 

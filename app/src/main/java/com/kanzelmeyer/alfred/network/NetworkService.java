@@ -75,7 +75,7 @@ public class NetworkService extends Service {
                 getResources().getString(R.string.default_host_address)));
 
         // Activate plugins
-        mDoorbellPlugin = new DoorbellPlugin("doorbell1", mContext);
+        mDoorbellPlugin = new DoorbellPlugin(mContext);
         mDoorbellPlugin.activate();
 
         // start service
