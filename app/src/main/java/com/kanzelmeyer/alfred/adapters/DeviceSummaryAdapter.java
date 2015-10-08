@@ -125,11 +125,11 @@ public class DeviceSummaryAdapter extends RecyclerView.Adapter<DeviceSummaryAdap
                 // Set description text
                 // TODO get recent visit count from visitor log
                 vh.getSummary().setTextColor(Color.DKGRAY);
-                int visitsToday = VisitorLog.getVisitsToday(mContext);
+                int visitsToday = VisitorLog.getVisitsToday(mContext, device.getName());
                 if(visitsToday == 1) {
-                    vh.getSummary().setText("You've had " + visitsToday + " visitor today");
+                    vh.getSummary().setText("You've had " + visitsToday + " visitor at the " + device.getName() + " today");
                 } else {
-                    vh.getSummary().setText("You've had " + visitsToday + " visitors today");
+                    vh.getSummary().setText("You've had " + visitsToday + " visitors at the " + device.getName() + " today");
                 }
 
                 // Set action text

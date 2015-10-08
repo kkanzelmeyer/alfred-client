@@ -7,10 +7,15 @@
     android:orientation="vertical"
     tools:context="com.kanzelmeyer.alfred.MainActivity$PlaceholderFragment">
 
-    <RelativeLayout
+    <android.support.v4.widget.SwipeRefreshLayout
+        android:id="@+id/swipeRefreshLayout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:padding="12dp">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
 
         <android.support.v7.widget.RecyclerView
             android:id="@+id/deviceSummaryRecyclerView"
@@ -20,8 +25,8 @@
             android:layout_alignParentTop="true"
             android:paddingTop="15dp"
             android:scrollbars="vertical" />
-
-    </RelativeLayout>
+        </RelativeLayout>
+    </android.support.v4.widget.SwipeRefreshLayout>
 
 
     <!-- Listview to display slider menu

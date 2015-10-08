@@ -7,6 +7,7 @@ import android.content.res.Configuration;
 import android.content.res.TypedArray;
 import android.os.Handler;
 import android.preference.PreferenceManager;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -44,6 +45,7 @@ public class MainActivity extends AppCompatActivity {
     // Recyclerview items
     private RecyclerView mDeviceSummary;
     private DeviceSummaryAdapter mDeviceAdapter;
+    private SwipeRefreshLayout mRefreshLayout;
     //
     private Handler mHandler;
 
@@ -57,13 +59,27 @@ public class MainActivity extends AppCompatActivity {
         populateNav();
         buildNav();
 
-        // Load Preferences
-//        PreferenceManager.setDefaultValues(this, R.xml.pref_general, false);
-//        manageService();
-
-        // TODO handler to update UI when a device is updated
         mHandler = new Handler();
         StateDeviceManager.addDeviceHandler(new ViewRefresher());
+
+        mRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipeRefreshLayout);
+        mRefreshLayout.setOnRefreshListener(
+                new SwipeRefreshLayout.OnRefreshListener() {
+                    @Override
+                    public void onRefresh() {
+                        Log.i(TAG, "onRefresh called from SwipeRefreshLayout");
+
+                        // This method performs the actual data-refresh operation.
+                        // The method calls setRefreshing(false) when it's finished.
+                        getDevices();
+                        stopRefreshing();
+                    }
+                }
+        );
+    }
+
+    private void stopRefreshing() {
+        mRefreshLayout.setRefreshing(false);
     }
 
     @Override

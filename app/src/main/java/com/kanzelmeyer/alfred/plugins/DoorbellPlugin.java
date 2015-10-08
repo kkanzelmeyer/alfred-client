@@ -87,9 +87,9 @@ public class DoorbellPlugin {
 
         @Override
         public void onMessageReceived(StateDeviceProtos.StateDeviceMessage msg) {
-            Log.i(TAG, "New message received");
-            // Update data model
-            if(msg != null) {
+            if(msg != null && msg.getType() == StateDeviceProtos.StateDeviceMessage.Type.DOORBELL) {
+
+                Log.i(TAG, "New message received");
 
                 // create a device from the message
                 StateDevice device = new StateDevice(msg);
@@ -161,36 +161,43 @@ public class DoorbellPlugin {
 
         @Override
         public void onAddDevice(StateDevice stateDevice) {
-            Log.i(TAG, "Device added: " + stateDevice.toString());
-        }
-
-        @Override
-        public void onUpdateDevice(StateDevice stateDevice) {
-            // If the state is set to inactive by the client
-            Log.i(TAG, "Device updated");
-            if(stateDevice.getState() == StateDeviceProtos.StateDeviceMessage.State.INACTIVE) {
-                StateDeviceProtos.StateDeviceMessage msg =
-                        StateDeviceProtos.StateDeviceMessage.newBuilder()
-                        .setId(stateDevice.getId())
-                        .setName(stateDevice.getName())
-                        .setState(stateDevice.getState())
-                        .setType(stateDevice.getType())
-                        .build();
-                // Send the message
-                try {
-                    Log.i(TAG, "Sending message: \n" + msg.toString());
-                    OutputStream out = Client.getConnection().getOutputStream();
-                    msg.writeDelimitedTo(out);
-                } catch (IOException e) {
-                    Client.removeConnection();
-                    Log.e(TAG, "unable to write to output stream", e);
-                }
+            if(stateDevice.getType() == StateDeviceProtos.StateDeviceMessage.Type.DOORBELL) {
+                Log.i(TAG, "Device added: " + stateDevice.toString());
             }
         }
 
         @Override
+        public void onUpdateDevice(StateDevice stateDevice) {
+            if(stateDevice.getType() == StateDeviceProtos.StateDeviceMessage.Type.DOORBELL) {
+                // If the state is set to inactive by the client
+                Log.i(TAG, "Device updated");
+                if(stateDevice.getState() == StateDeviceProtos.StateDeviceMessage.State.INACTIVE) {
+                    StateDeviceProtos.StateDeviceMessage msg =
+                            StateDeviceProtos.StateDeviceMessage.newBuilder()
+                                    .setId(stateDevice.getId())
+                                    .setName(stateDevice.getName())
+                                    .setState(stateDevice.getState())
+                                    .setType(stateDevice.getType())
+                                    .build();
+                    // Send the message
+                    try {
+                        Log.i(TAG, "Sending message: \n" + msg.toString());
+                        OutputStream out = Client.getConnection().getOutputStream();
+                        msg.writeDelimitedTo(out);
+                    } catch (IOException e) {
+                        Client.removeConnection();
+                        Log.e(TAG, "unable to write to output stream", e);
+                    }
+                }
+            }
+
+        }
+
+        @Override
         public void onRemoveDevice(StateDevice stateDevice) {
-            Log.i(TAG, "Device removed");
+            if(stateDevice.getType() == StateDeviceProtos.StateDeviceMessage.Type.DOORBELL) {
+                Log.i(TAG, "Device removed");
+            }
         }
     }
 }

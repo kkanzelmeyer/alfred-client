@@ -33,7 +33,7 @@ public class VisitorLog {
      * @param context
      * @return
      */
-    public static int getVisitsToday(Context context) {
+    public static int getVisitsToday(Context context, String location) {
         JSONArray log = getLogAsJSONArray(context);
         ArrayList<Visitor> visitorList = new ArrayList<>();
         JSONArray returnArray = new JSONArray();
@@ -48,7 +48,7 @@ public class VisitorLog {
                     v = toVisitor(obj);
 
                     // update the count of visitors today
-                    if(isToday(v.getTime())) {
+                    if(isToday(v.getTime()) && v.getLocation().equals(location)) {
                         visitsToday ++;
                     }
                 } catch (JSONException e) {
