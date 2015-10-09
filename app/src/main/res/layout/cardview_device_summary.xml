@@ -75,6 +75,18 @@
                     android:textColor="#E91E63"
                     android:layout_alignParentEnd="true" />
 
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingRight="8dp"
+                    android:textAppearance="?android:attr/textAppearanceSmall"
+                    android:text="TAKE PICTURE"
+                    android:id="@+id/cardviewActionText2"
+                    android:textStyle="bold"
+                    android:textColor="#E91E63"
+                    android:layout_alignParentTop="true"
+                    android:layout_toStartOf="@+id/cardviewActionText" />
+
             </RelativeLayout>
 
         </RelativeLayout>

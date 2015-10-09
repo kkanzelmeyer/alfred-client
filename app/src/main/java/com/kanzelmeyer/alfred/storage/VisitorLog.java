@@ -149,10 +149,11 @@ public class VisitorLog {
         }
         // Sort the visitor log and delete old entries
         Collections.sort(visitorList);
+
         if (visitorList.size() > entriesToKeep) {
             for (int i = entriesToKeep; i < visitorList.size(); i++) {
                 v = visitorList.get(i);
-                // TODO remove images associated with visitor
+
                 // check if file exists
                 File imageDirectory = new File(context.getFilesDir() + ConstantManager.IMAGE_DIR);
                 if (!imageDirectory.exists()) {
@@ -241,14 +242,13 @@ public class VisitorLog {
      * @return
      */
     public static boolean isToday(long time) {
-        Calendar c = Calendar.getInstance();
-        c.setTimeInMillis(time);
-        Date visitorDate = c.getTime();
+        Calendar visit = Calendar.getInstance();
+        visit.setTimeInMillis(time);
 
-        c.setTimeInMillis(System.currentTimeMillis());
-        Date now = c.getTime();
+        Calendar now = Calendar.getInstance();
+        now.setTimeInMillis(System.currentTimeMillis());
 
-        return visitorDate.before(now);
+        return (visit.get(Calendar.DAY_OF_YEAR) == now.get(Calendar.DAY_OF_YEAR));
     }
 
 }
