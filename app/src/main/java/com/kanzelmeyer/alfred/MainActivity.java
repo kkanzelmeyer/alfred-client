@@ -62,6 +62,7 @@ public class MainActivity extends AppCompatActivity {
         mHandler = new Handler();
         StateDeviceManager.addDeviceHandler(new ViewRefresher());
 
+        // Refresh gesture behavior
         mRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipeRefreshLayout);
         mRefreshLayout.setOnRefreshListener(
                 new SwipeRefreshLayout.OnRefreshListener() {
@@ -76,6 +77,9 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
         );
+
+        // for testing
+        addTestDevices();
     }
 
     private void stopRefreshing() {
@@ -147,6 +151,13 @@ public class MainActivity extends AppCompatActivity {
         // set properties
         mDeviceSummary.setLayoutManager(llm);
         mDeviceSummary.setAdapter(mDeviceAdapter);
+
+        // for dev and debugging
+        Log.i(TAG, "Printing devices");
+        for(StateDevice device : deviceArray) {
+            Log.i(TAG, "Device: " + device.toString());
+        }
+
     }
 
     /**
@@ -258,20 +269,6 @@ public class MainActivity extends AppCompatActivity {
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setHomeButtonEnabled(true);
-    }
-
-    /**
-     * Helper method to manage the network service
-     */
-    public void manageService() {
-        Intent serviceIntent = new Intent(this, NetworkService.class);
-        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(mContext);
-        boolean preferenceRun = sharedPref.getBoolean(SettingsActivity.KEY_SERVICE_RUN, false);
-        if(preferenceRun) {
-            startService(serviceIntent);
-        } else {
-            stopService(serviceIntent);
-        }
     }
 
     /**

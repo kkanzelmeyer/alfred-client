@@ -1,6 +1,7 @@
 package com.kanzelmeyer.alfred.adapters;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.support.v7.widget.CardView;
@@ -12,12 +13,14 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.alfred.common.datamodel.StateDevice;
+import com.alfred.common.datamodel.StateDeviceManager;
 import com.alfred.common.messages.StateDeviceProtos;
 import com.kanzelmeyer.alfred.R;
 import com.kanzelmeyer.alfred.VisitorActivity;
 import com.kanzelmeyer.alfred.storage.VisitorLog;
 
 import org.apache.commons.lang3.text.WordUtils;
+import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 
@@ -41,7 +44,8 @@ public class DeviceSummaryAdapter extends RecyclerView.Adapter<DeviceSummaryAdap
         private ImageView contextImage;
         private ImageView alertIcon;
         private TextView summary;
-        private TextView action;
+        private TextView secondaryAction;
+        private TextView primaryAction;
 
         public CardView getCardview() {
             return cardview;
@@ -59,8 +63,12 @@ public class DeviceSummaryAdapter extends RecyclerView.Adapter<DeviceSummaryAdap
             return summary;
         }
 
-        public TextView getAction() {
-            return action;
+        public TextView getSecondaryAction() {
+            return secondaryAction;
+        }
+
+        public TextView getPrimaryActionAction() {
+            return primaryAction;
         }
 
         public DeviceSummaryViewHolder(View view) {
@@ -68,7 +76,8 @@ public class DeviceSummaryAdapter extends RecyclerView.Adapter<DeviceSummaryAdap
             cardview = (CardView) view.findViewById(R.id.deviceCardView);
             contextImage = (ImageView) view.findViewById(R.id.cardviewIcon);
             summary = (TextView) view.findViewById(R.id.cardviewDeviceSummary);
-            action = (TextView) view.findViewById(R.id.cardviewActionText);
+            primaryAction = (TextView) view.findViewById(R.id.cardviewActionPrimary);
+            secondaryAction = (TextView) view.findViewById(R.id.cardviewActionSecondary);
             alertIcon = (ImageView) view.findViewById((R.id.alertIcon));
         }
 
@@ -104,14 +113,15 @@ public class DeviceSummaryAdapter extends RecyclerView.Adapter<DeviceSummaryAdap
                 // Set state specific properties
                 if(device.getState() == StateDeviceProtos.StateDeviceMessage.State.CLOSED) {
                     vh.getSummary().setTextColor(Color.DKGRAY);
-                    vh.getAction().setText("OPEN NOW");
+                    vh.getSecondaryAction().setText("OPEN NOW");
                     vh.getAlertIcon().setVisibility(View.INVISIBLE);
                 } else {
-                    vh.getAction().setText("CLOSE NOW");
+                    vh.getSecondaryAction().setText("CLOSE NOW");
                     vh.getAlertIcon().setVisibility(View.VISIBLE);
                 }
 
                 // TODO add button click listener
+                vh.getPrimaryActionAction().setVisibility(View.GONE);
 
                 break;
 
@@ -123,19 +133,17 @@ public class DeviceSummaryAdapter extends RecyclerView.Adapter<DeviceSummaryAdap
                 vh.getAlertIcon().setVisibility(View.INVISIBLE);
 
                 // Set description text
-                // TODO get recent visit count from visitor log
                 vh.getSummary().setTextColor(Color.DKGRAY);
                 int visitsToday = VisitorLog.getVisitsToday(mContext, device.getName());
-                if(visitsToday == 1) {
-                    vh.getSummary().setText("You've had " + visitsToday + " visitor at the " + device.getName() + " today");
-                } else {
-                    vh.getSummary().setText("You've had " + visitsToday + " visitors at the " + device.getName() + " today");
+
+                // format "visitor" for proper plurality
+                String noun = "visitor";
+                if(visitsToday != 1) {
+                    noun += "s";
                 }
+                vh.getSummary().setText("You've had " + visitsToday + " " + noun + " at the " + device.getName() + " today");
 
-                // Set action text
-                vh.getAction().setText("VIEW");
-
-                // Set click listeners
+                // Set click listener(s)
                 vh.getCardview().setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
@@ -143,6 +151,18 @@ public class DeviceSummaryAdapter extends RecyclerView.Adapter<DeviceSummaryAdap
                         mContext.startActivity(intent);
                     }
                 });
+
+                // Primary Action
+                // add an option to request a photo if the device is inactive
+                vh.getPrimaryActionAction().setText("REQUEST PHOTO");
+                if(device.getState() != StateDeviceProtos.StateDeviceMessage.State.ACTIVE) {
+                    vh.getPrimaryActionAction().setOnClickListener(new RequestPictureClickListener(device.getId()));
+                } else {
+                    vh.getPrimaryActionAction().setTextColor(Color.LTGRAY);
+                }
+
+                // Secondary Action
+                vh.getSecondaryAction().setText("VIEW");
 
                 break;
 
@@ -155,6 +175,8 @@ public class DeviceSummaryAdapter extends RecyclerView.Adapter<DeviceSummaryAdap
 
                 break;
         }
+
+
     }
 
     @Override
@@ -166,5 +188,20 @@ public class DeviceSummaryAdapter extends RecyclerView.Adapter<DeviceSummaryAdap
     @Override
     public void onAttachedToRecyclerView(RecyclerView recyclerView) {
         super.onAttachedToRecyclerView(recyclerView);
+    }
+
+    // Click listener for "take picture" action on doorbell device summary
+    class RequestPictureClickListener implements View.OnClickListener {
+
+        private String myDeviceId;
+
+        RequestPictureClickListener(String id) {
+            myDeviceId = id;
+        }
+
+        @Override
+        public void onClick(View v) {
+            StateDeviceManager.updateStateDevice(myDeviceId, StateDeviceProtos.StateDeviceMessage.State.ACTIVE);
+        }
     }
 }

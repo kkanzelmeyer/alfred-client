@@ -25,9 +25,6 @@ import java.util.ArrayList;
 public class VisitorActivity extends AppCompatActivity {
 
     private static final String TAG = "Visitor";
-    private ActionBarDrawerToggle mDrawerToggle;
-    private DrawerLayout mDrawerLayout;
-    private ListView mDrawerList;
     private Context mContext;
 
     @Override
