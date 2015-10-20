@@ -14,8 +14,8 @@ This project was originally created
 ### Connecting to Alfred
 Connecting the Android Alfred client to the Alfred server requires three components:
 
-1. Connection to the same network as the server. As of now the server is only accessible on it's local network. To connect you must be on the same network (at home, for example). 
-2. Alfred Server must be running. This seems obvious, but I wanted to add it here because I still goof this up from time to time.
-3. Set the IP Address and Port Number to be the same as the Server setting. The Server IP Address and Server Port are system adjustable parameters (SAPs) on the server and on the Android client. The settings need to match. The IP Address should be the IP Address of your Raspberry Pi, and the port can any available TCP port on your network.
+1. **Connection to the same network as the server.** As of now the server is only accessible on it's local network. To connect you must be on the same network (at home, for example). 
+2. **Alfred Server must be running.** This seems obvious, but I wanted to add it here because I still goof this up from time to time.
+3. **IP Address and Port Number must be the same as the Server.** The Server IP Address and Server Port are system adjustable parameters (SAPs) on the server and on the Android client. The settings need to match. The IP Address should be the IP Address of your Raspberry Pi, and the port can any available TCP port on your network.
 
 The Android Alfred client has a "Run In Background" setting. When enabled, a background service is constantly listening for messages sent from the Alfred server. It is recommended to enable this service in order to receive real time notifications from connected doorbell devices. At my house we have Alfred running on an old Android phone.
